@@ -208,8 +208,12 @@ namespace NeoPixelMatrix {
 
     function setPixel(x: number, y: number, color: number): void {
         if (strip) {
+            if (color < 0 || color > 16777215) {
+                serialDebugMsg("setPixel: Error color value out of range");
+                color = 16777215;
+            }
             if (x >= 0 && x < matrixWidth && y >= 0 && y < matrixHeight) {
-                index = (matrixHeight - 1 - y) * matrixWidth + x;//(y)* 8 + x;
+                index = (matrixHeight - 1 - y) * matrixWidth + x; // (y)* 8 + x;
                 strip.setPixelColor(index, color);
                 // serialDebugMsg("setPixel: set pixel(" + x + "," + y + ") to = #" + color);
             } else {
@@ -231,6 +235,9 @@ namespace NeoPixelMatrix {
     //% x.min=0 x.max=7 y.min=0 y.max=7
     //% R.min=0 R.max=255 G.min=0 G.max=255 B.min=0 B.max=255
     export function setOnePixelRGB(x: number, y: number, R: number, G: number, B: number): void {
+        R = Math.max(0, Math.min(255, R));
+        G = Math.max(0, Math.min(255, G));
+        B = Math.max(0, Math.min(255, B));
         let color = neopixel.rgb(R, G, B);
         setPixel(x, y, color);
         strip.show();
