@@ -287,6 +287,23 @@ namespace NeoPixelMatrix {
         }
     }
 
+     //% block="read joystick direction as text"
+     export function readJoystickText(): string {
+        if (pins.digitalReadPin(pinCenterButton) == 0) {
+            return "Center";
+        } else if (pins.digitalReadPin(pinUpButton) == 0) {
+            return "Up";
+        } else if (pins.digitalReadPin(pinDownButton) == 0) {
+            return "Down";
+        } else if (pins.digitalReadPin(pinRightButton) == 0) {
+            return "Right";
+        } else if (pins.digitalReadPin(pinLeftButton) == 0) {
+            return "Left";
+        } else {
+            return "NotPressed";
+        }
+    }
+
     /**
      */
     //% block="Bild8x8"
@@ -331,6 +348,8 @@ namespace NeoPixelMatrix {
         // Due to a bug the block is always generated with speed of 0. In this case we set it to 100ms.
         if (speed < 1) {
             speed = 100; // 100ms
+        } else {
+            speed = 1001 - speed; // make 1000 the fstest speed
         }
 
         try {
@@ -365,9 +384,22 @@ namespace NeoPixelMatrix {
         }
     }
 
-    //% block="scroll text $text with color $color and delay $delay ms"
+    // function isValidString(input: string): string {
+    //     const regex = /[^a-zA-Z0-9.,!?]/g;
+    //     return input.replace(regex, ' ');
+    //     // return regex.test(input);
+    //     //return input.replace(regex, ' ');
+    // }
+
+    //% block="scroll text $text with color $color and speed $speed"
     //% color.shadow="colorNumberPicker"
-    export function scrollText(text: string, color: number, delay: number): void {
+    //% speed.defl=100 speed.min=1 speed.max=1000
+    export function scrollText(text: string, color: number, speed: number): void {
+        if (speed < 1) {
+            speed = 100; // 100ms
+        } else {
+            speed = 1001 - speed; // make 1000 the fstest speed
+        }
         textArray = getTextArray(text);
         totalWidth = textArray[0].length;
         serialDebugMsg("\nscrollText: beginning Scrolling text: " + text);
@@ -380,7 +412,7 @@ namespace NeoPixelMatrix {
                 }
             }
             strip.show();
-            basic.pause(delay);
+            basic.pause(speed);
         }
         textArray = [];
         serialDebugMsg("scrollText: Scroll Text Completed\n");
