@@ -50,8 +50,8 @@ namespace NeoPixelMatrix {
     let pinRightButton: DigitalPin = DigitalPin.P8;
     let pinLeftButton: DigitalPin = DigitalPin.P12;
     let counter = 0;
-    let lastSliderValue = readSlider();
-    let lastJoystickDirection: JoystickDirection = JoystickDirection.NotPressed;
+    let lastSliderValue = readSlider(); // used for sliderValueChanged
+    let lastJoystickDirection: JoystickDirection = JoystickDirection.NotPressed; // used for joystickDirectionChanged
     let result: number[][] = [];
     let binaryArray: number[] = [];
     let finalResult: number[][] = [];
@@ -146,7 +146,7 @@ namespace NeoPixelMatrix {
     function isValidString(input: string): string {
         const allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?():;".split(''); // TODO if problems use let instead of const
         let result = '';
-    
+
         for (let i = 0; i < input.length; i++) {
             if (allowedChars.indexOf(input[i]) !== -1) {
                 result += input[i];
@@ -154,7 +154,7 @@ namespace NeoPixelMatrix {
                 result += ' ';
             }
         }
-    
+
         return result;
     }
 
@@ -291,13 +291,55 @@ namespace NeoPixelMatrix {
         return pins.digitalReadPin(pinSlider);
     }
 
+    // creates thread to poll slider value and execute callback when value changes
     //% block="when slider value changed"
-    export function SliderValueChanged(callback: () => void): void {
+    export function sliderValueChanged(callback: () => void): void {
         control.inBackground(() => {
+            let currentSliderValue = 0;
             while (true) {
-                let currentSliderValue = pins.digitalReadPin(pinSlider);
+                currentSliderValue = pins.digitalReadPin(pinSlider);
                 if (currentSliderValue !== lastSliderValue) {
                     lastSliderValue = currentSliderValue;
+                    callback();
+                }
+                basic.pause(pollingInterval);
+            }
+        });
+    }
+
+    // creates thread to poll joystick direction and execute callback when direction changes
+    //% block="when joystick direction:$direction changed"
+    export function joystickDirectionChanged(directionString: string, callback: () => void): void {
+        let direction: JoystickDirection;
+        if (!(directionString === "notPressed" || directionString === "center" || directionString === "up" || directionString === "down" || directionString === "right" || directionString === "left")) {
+            direction = JoystickDirection.Center;
+            serialDebugMsg("joystickDirectionChanged: Invalid directionString. Setting to Center");
+        } else if (directionString === "notPressed") {
+            direction = JoystickDirection.NotPressed;
+        } else if (directionString === "center") {
+            direction = JoystickDirection.Center;
+        }
+        else if (directionString === "up") {
+            direction = JoystickDirection.Up;
+        }
+        else if (directionString === "down") {
+            direction = JoystickDirection.Down;
+        }
+        else if (directionString === "right") {
+            direction = JoystickDirection.Right;
+        }
+        else if (directionString === "left") {
+            direction = JoystickDirection.Left;
+        } else {
+            direction = JoystickDirection.Center;
+            serialDebugMsg("joystickDirectionChanged: Error directionString. Setting to Center");
+        }
+        control.inBackground(() => {
+            let currentJoystickDirection: JoystickDirection = 0;
+            while (true) {
+                currentJoystickDirection = readJoystick();
+                if (currentJoystickDirection !== lastJoystickDirection) {
+                    lastJoystickDirection = currentJoystickDirection;
                     callback();
                 }
                 basic.pause(pollingInterval);
@@ -322,8 +364,8 @@ namespace NeoPixelMatrix {
         }
     }
 
-     //% block="read joystick direction as text"
-     export function readJoystickText(): string {
+    //% block="read joystick direction as text"
+    export function readJoystickText(): string {
         if (pins.digitalReadPin(pinCenterButton) == 0) {
             return "Center";
         } else if (pins.digitalReadPin(pinUpButton) == 0) {
