@@ -471,6 +471,10 @@ namespace NeoPixelMatrix {
         } else {
             speed = 1001 - speed; // make 1000 the fstest speed
         }
+        if (text.length > 255) {
+            text = text.substr(0, 255);
+            serialDebugMsg("scrollText: Text is to loong, enything longer than 255 is cut off. \n");
+        }
         text = isValidString(text); // validate text only conaines allowed symbols
         textArray = getTextArray(text);
         totalWidth = textArray[0].length;
