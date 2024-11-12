@@ -307,6 +307,40 @@ namespace NeoPixelMatrix {
         });
     }
 
+    //% block="read joystick direction"
+    export function readJoystick(): number {
+        if (pins.digitalReadPin(pinCenterButton) == 0) {
+            return JoystickDirection.Center;
+        } else if (pins.digitalReadPin(pinUpButton) == 0) {
+            return JoystickDirection.Up;
+        } else if (pins.digitalReadPin(pinDownButton) == 0) {
+            return JoystickDirection.Down;
+        } else if (pins.digitalReadPin(pinRightButton) == 0) {
+            return JoystickDirection.Right;
+        } else if (pins.digitalReadPin(pinLeftButton) == 0) {
+            return JoystickDirection.Left;
+        } else {
+            return JoystickDirection.NotPressed;
+        }
+    }
+
+    //% block="read joystick direction as text"
+    export function readJoystickText(): string {
+        if (pins.digitalReadPin(pinCenterButton) == 0) {
+            return "Center";
+        } else if (pins.digitalReadPin(pinUpButton) == 0) {
+            return "Up";
+        } else if (pins.digitalReadPin(pinDownButton) == 0) {
+            return "Down";
+        } else if (pins.digitalReadPin(pinRightButton) == 0) {
+            return "Right";
+        } else if (pins.digitalReadPin(pinLeftButton) == 0) {
+            return "Left";
+        } else {
+            return "NotPressed";
+        }
+    }
+
     // creates thread to poll joystick direction and execute callback when direction changes
     //% block="when joystick direction:$direction changed"
     export function joystickDirectionChanged(directionString: string, callback: () => void): void {
@@ -345,40 +379,6 @@ namespace NeoPixelMatrix {
                 basic.pause(pollingInterval);
             }
         });
-    }
-
-    //% block="read joystick direction"
-    export function readJoystick(): number {
-        if (pins.digitalReadPin(pinCenterButton) == 0) {
-            return JoystickDirection.Center;
-        } else if (pins.digitalReadPin(pinUpButton) == 0) {
-            return JoystickDirection.Up;
-        } else if (pins.digitalReadPin(pinDownButton) == 0) {
-            return JoystickDirection.Down;
-        } else if (pins.digitalReadPin(pinRightButton) == 0) {
-            return JoystickDirection.Right;
-        } else if (pins.digitalReadPin(pinLeftButton) == 0) {
-            return JoystickDirection.Left;
-        } else {
-            return JoystickDirection.NotPressed;
-        }
-    }
-
-    //% block="read joystick direction as text"
-    export function readJoystickText(): string {
-        if (pins.digitalReadPin(pinCenterButton) == 0) {
-            return "Center";
-        } else if (pins.digitalReadPin(pinUpButton) == 0) {
-            return "Up";
-        } else if (pins.digitalReadPin(pinDownButton) == 0) {
-            return "Down";
-        } else if (pins.digitalReadPin(pinRightButton) == 0) {
-            return "Right";
-        } else if (pins.digitalReadPin(pinLeftButton) == 0) {
-            return "Left";
-        } else {
-            return "NotPressed";
-        }
     }
 
     /**
@@ -1125,4 +1125,54 @@ namespace NeoPixelMatrix {
         // });
     }
 
+    export function testLedMatrixHW(): void {
+        let oldBrightness: number = currentBrightness
+        setBrightness(255);
+        serialDebugMsg("testLedMatrix: Start testing LED matrix pixels");
+        for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+                clear();
+                setOnePixelRGB(x, y, 255, 0, 0);
+                basic.pause(100);
+                clear();
+                setOnePixelRGB(x, y, 0, 255, 0);
+                basic.pause(100);
+                clear();
+                setOnePixelRGB(x, y, 0, 0, 255);
+                basic.pause(100);
+            }
+        }
+        setBrightness(oldBrightness);
+        serialDebugMsg("testLedMatrix: Finisched testing LED matrix pixels");
+
+        serialDebugMsg("testLedMatrix: Start testing LED matrix slider");
+        if (0 === readSlider()) {
+            serialDebugMsg("testLedMatrix: Slider is 0");
+        }
+        if (1 === readSlider()) {
+            serialDebugMsg("testLedMatrix: Slider is 1");
+        }
+
+        serialDebugMsg("testLedMatrix: Start testing LED matrix joystick");
+        if (0 === readJoystick()) {
+            serialDebugMsg("testLedMatrix: Joystick is NotPressed");
+        }
+        if (1 === readJoystick()) {
+            serialDebugMsg("testLedMatrix: Joystick is Center");
+        }
+        if (2 === readJoystick()) {
+            serialDebugMsg("testLedMatrix: Joystick is Up");
+        }
+        if (3 === readJoystick()) {
+            serialDebugMsg("testLedMatrix: Joystick is Down");
+        }
+        if (4 === readJoystick()) {
+            serialDebugMsg("testLedMatrix: Joystick is Right");
+        }
+        if (5 === readJoystick()) {
+            serialDebugMsg("testLedMatrix: Joystick is Left");
+        }
+
+        serialDebugMsg("testLedMatrix: Finisched testing LED matrix")
+    }
 }
