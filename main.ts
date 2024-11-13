@@ -1,7 +1,4 @@
-input.onButtonPressed(Button.A, function () {
-	
-})
-NeoPixelMatrix.SliderValueChanged(function () {
+NeoPixelMatrix.sliderValueChanged(function () {
     basic.showNumber(NeoPixelMatrix.readSlider())
     serial.writeValue("slider", NeoPixelMatrix.readSlider())
     NeoPixelMatrix.setCurrentTime(h, m, s)
@@ -24,6 +21,3 @@ while (true) {
     basic.pause(5000)
     serial.writeLine(NeoPixelMatrix.getCurrentTimeAsText())
 }
-control.inBackground(function () {
-	
-})
