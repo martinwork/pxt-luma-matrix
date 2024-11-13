@@ -541,6 +541,9 @@ namespace NeoPixelMatrix {
                     serialDebugMsg("getTextArray: failed to push char array");
                 }
                 //serialDebugMsg("getTextArray: pushed zeros");
+            } else {
+                serialDebugMsg("getTextArray: Error getting char Data");
+                finalResult = [[0],[0]];
             }
         }
         //serialDebugMsg("getTextArray: Centering Result");
@@ -894,16 +897,12 @@ namespace NeoPixelMatrix {
             } else {
                 modifier = this._clocktable.PAST;
             }
-            serialDebugMsg("WordClock: 1");
-
             minutes = 5 * Math.round(minutes / 5);
             hours = Math.floor(hours % 12);
 
-            serialDebugMsg("WordClock: 2");
+            serialDebugMsg("WordClock: after conversion, hours = " + hours + ", minutes = " + minutes);
 
             this._matrix.clear();
-
-            serialDebugMsg("WordClock: 3, hours = " + hours + ", minutes = " + minutes);
 
             // let ONE_TEST: [number, number][] // no work
             // let ONE_TEST: Array<[number, number]>; // no work
