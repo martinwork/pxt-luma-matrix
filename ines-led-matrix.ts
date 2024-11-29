@@ -1,5 +1,5 @@
 namespace NeoPixelMatrix {
-    // ENUMS
+    /* ENUMS */
     enum Direction {
         //% block="right"
         Right = 0,
@@ -7,14 +7,6 @@ namespace NeoPixelMatrix {
         Left = 1
     }
 
-    // //% block="JoystickDirection" // in case strings are needed instead of numbers
-    // type JoystickDirection = 
-    //     | "notPressed"
-    //     | "center"
-    //     | "up"
-    //     | "down"
-    //     | "right"
-    //     | "left";
     enum JoystickDirection {
         //% block="notPressed"
         NotPressed = 0,
@@ -30,7 +22,7 @@ namespace NeoPixelMatrix {
         Left = 5
     }
 
-    // GLOBAL VARIABLES
+    /* GLOBAL VARIABLES */
     const startTime = control.millis();
     let currentTimeSeconds: number = 0;
     const timeUpdateInterval: number = 1; // in second
@@ -64,9 +56,9 @@ namespace NeoPixelMatrix {
     let index: number = 0;
     let debugEnabled: boolean = false;
 
-    // Simple 8x8 font
+    /* Simple 8x8 font */
     let textFont: { [char: string]: number[] } = {
-        // Uppercase letters map
+        /* Uppercase letters map */
         'A': [0b00000000, 0b00011000, 0b00100100, 0b01000010, 0b01111110, 0b01000010, 0b01000010, 0b00000000],
         'B': [0b00000000, 0b01111000, 0b01000100, 0b01111000, 0b01000100, 0b01000100, 0b01111000, 0b00000000],
         'C': [0b00000000, 0b00111100, 0b01000010, 0b01000000, 0b01000000, 0b01000010, 0b00111100, 0b00000000],
@@ -94,7 +86,7 @@ namespace NeoPixelMatrix {
         'Y': [0b00000000, 0b01000010, 0b00100100, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00000000],
         'Z': [0b00000000, 0b01111110, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b01111110, 0b00000000],
         ' ': [0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000],
-        // Lowercase letters map
+        /* Lowercase letters map */
         'a': [0b00000000, 0b00000000, 0b00111100, 0b00000010, 0b00111110, 0b01000010, 0b00111110, 0b00000000],
         'b': [0b00000000, 0b01000000, 0b01000000, 0b01111100, 0b01000010, 0b01000010, 0b01111100, 0b00000000],
         'c': [0b00000000, 0b00000000, 0b00111100, 0b01000000, 0b01000000, 0b01000010, 0b00111100, 0b00000000],
@@ -121,7 +113,7 @@ namespace NeoPixelMatrix {
         'x': [0b00000000, 0b00000000, 0b01000010, 0b00100100, 0b00011000, 0b00100100, 0b01000010, 0b00000000],
         'y': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b00111110, 0b00000010, 0b00111100, 0b00000000],
         'z': [0b00000000, 0b00000000, 0b01111110, 0b00000100, 0b00001000, 0b00100000, 0b01111110, 0b00000000],
-        // Number map
+        /* Number map */
         '0': [0b00000000, 0b00111100, 0b01000010, 0b01000110, 0b01001010, 0b01010010, 0b00111100, 0b00000000],
         '1': [0b00000000, 0b00011000, 0b00101000, 0b00001000, 0b00001000, 0b00001000, 0b01111110, 0b00000000],
         '2': [0b00000000, 0b00111100, 0b01000010, 0b00000010, 0b00011100, 0b00100000, 0b01111110, 0b00000000],
@@ -132,7 +124,7 @@ namespace NeoPixelMatrix {
         '7': [0b00000000, 0b01111110, 0b00000010, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b00000000],
         '8': [0b00000000, 0b00111100, 0b01000010, 0b00111100, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
         '9': [0b00000000, 0b00111100, 0b01000010, 0b00111110, 0b00000010, 0b01000010, 0b00111100, 0b00000000],
-        // Symbols map
+        /* Symbols map */
         '(': [0b00000000, 0b00001100, 0b00010000, 0b00100000, 0b00100000, 0b00010000, 0b00001100, 0b00000000],
         ')': [0b00000000, 0b00110000, 0b00001000, 0b00000100, 0b00000100, 0b00001000, 0b00110000, 0b00000000],
         ':': [0b00000000, 0b00000000, 0b00011000, 0b00011000, 0b00000000, 0b00011000, 0b00011000, 0b00000000],
@@ -291,7 +283,7 @@ namespace NeoPixelMatrix {
         return pins.digitalReadPin(pinSlider);
     }
 
-    // creates thread to poll slider value and execute callback when value changes
+    /* Creates thread to poll slider value and execute callback when value changes. */
     //% block="when slider value changed"
     export function sliderValueChanged(callback: () => void): void {
         control.inBackground(() => {
@@ -341,7 +333,7 @@ namespace NeoPixelMatrix {
         }
     }
 
-    // creates thread to poll joystick direction and execute callback when direction changes
+    /* Creates thread to poll joystick direction and execute callback when direction changes. */
     //% block="when joystick direction:$direction changed"
     export function joystickDirectionChanged(directionString: string, callback: () => void): void {
         let direction: JoystickDirection;
@@ -422,7 +414,7 @@ namespace NeoPixelMatrix {
     //% speed.defl=100 speed.min=1 speed.max=1000
     //% direction.defl=Direction.Right
     export function movingImage(image: Image, color: number, speed: number, direction: Direction): void {
-        // Due to a bug the block is always generated with speed of 0. In this case we set it to 100ms.
+        /* Due to a bug the block is always generated with speed of 0. In this case we set it to 100ms. */
         if (speed < 1) {
             speed = 100; // 100ms
         } else {
@@ -504,7 +496,7 @@ namespace NeoPixelMatrix {
         counter += 1;
         //serialDebugMsg("getTextArray: Number of Executions: " + counter);
 
-        //create binary array of each 
+        /* Create binary array of each */
         for (let i = 0; i < text.length; i++) {
             if (textFont[text[i]]) {
                 try {
@@ -553,7 +545,7 @@ namespace NeoPixelMatrix {
             serialDebugMsg("getTextArray: Error transposing final matrix")
         }
 
-        // Clear arrays to free memory (garbage collector can reclaim memory)
+        /* Clear arrays to free memory (garbage collector can reclaim memory) */
         result = null;
         binaryArray = null;
         output = null;
@@ -570,18 +562,18 @@ namespace NeoPixelMatrix {
         const delay = targetTime - currentTime;
 
         if (delay <= 0) {
-            // If the target time is in the past or now, call the callback immediately
+            /* If the target time is in the past or now, call the callback immediately. */
         } else {
             basic.pause(delay);
         }
     }
 
-    // Function to calculate the current time, needs to be run in the background
+    /* Function to calculate the current time, needs to be run in the background. */
     function calculateCurrentTime(): void {
-        // Calculate the next wake-up time
+        /* Calculate the next wake-up time. */
         let nextWakeUpTime = startTime + timeUpdateInterval * 1000 * timeUpdateIntervalCounter;
 
-        // Sleep until the next wake-up time
+        /* Sleep until the next wake-up time. */
         sleepUntil(nextWakeUpTime);
         if (!isUpdatingTime) { // Mutex to prevent updating time while it is being calculated
             isUpdatingTime = true;
@@ -606,7 +598,7 @@ namespace NeoPixelMatrix {
         let minutes = Math.floor((currentTimeSeconds % 3600) / 60);
         let seconds = currentTimeSeconds % 60;
 
-        // // return the time as a 2D array of numbers
+        /* return the time as a 2D array of numbers. */
         // return [
         //     [hours],
         //     [minutes],
@@ -615,7 +607,7 @@ namespace NeoPixelMatrix {
         return `${hours}:${minutes}:${seconds}`; // return the time as a string
     }
 
-    // TODO Bug in block no slider for setting time, only works with variables
+    /* TODO Bug in block no slider for setting time, only works with variables. */
     //% block="set current time to $hours:$minutes:$seconds"
     //% hours.min=0 hours.max=23
     //% minutes.min = 0 minutes.max = 59
@@ -630,7 +622,7 @@ namespace NeoPixelMatrix {
             serialDebugMsg("Invalid seconds. Must be between 0 and 59.");
         } else {
             if (!isUpdatingTime) { // Mutex to prevent updating time while it is being calculated
-                // Calculate the start time in seconds
+                /* Calculate the start time in seconds. */
                 isUpdatingTime = true;
                 currentTimeSeconds = hours * 3600 + minutes * 60 + seconds;
                 isUpdatingTime = false;
@@ -805,7 +797,7 @@ namespace NeoPixelMatrix {
                 this.ZHAW.push([0, 3]);
             }
 
-            // Lookup dictionary for wordclock hours
+            /* Lookup dictionary for wordclock hours */
             this.HOURS_MAPPING = {
                 0: this.TWELVE,
                 1: this.ONE,
@@ -821,7 +813,7 @@ namespace NeoPixelMatrix {
                 11: this.ELEVEN,
             };
 
-            // Lookup dictionary for wordclock minutes
+            /* Lookup dictionary for wordclock minutes */
             this.MINUTES_MAPPING = {
                 0: 0,
                 5: this.MIN_FIVE,
@@ -1063,14 +1055,14 @@ namespace NeoPixelMatrix {
             }
 
 
-            // Set pixels for hours
+            /* Set pixels for hours */
             this.setClockPixels(hoursMapping, this.hourColor);
 
             serialDebugMsg("WordClock: 3.2");
             basic.pause(1);
 
             if (minutes !== 0) {
-                // Set pixels for minutes
+                /* Set pixels for minutes */
                 const minutesMapping = this._clocktable.MINUTES_MAPPING[minutes];
                 serialDebugMsg("WordClock: MINUTES_MAPPING[minutes] = " + JSON.stringify(minutesMapping));
                 if (Array.isArray(minutesMapping) && minutesMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
@@ -1078,7 +1070,7 @@ namespace NeoPixelMatrix {
                 } else {
                     serialDebugMsg("WordClock: Error - MINUTES_MAPPING[minutes] is not a valid array of tuples");
                 }
-                // Set pixels for modifier
+                /* Set pixels for modifier */
                 this.setClockPixels(modifier, this.wordColor);
             }
 
@@ -1087,7 +1079,7 @@ namespace NeoPixelMatrix {
 
             serialDebugMsg("WordClock: 4");
 
-            // Wait until the next full minute to refresh the display
+            /* Wait until the next full minute to refresh the display */
             this.waitUntilRefresh();
             serialDebugMsg("WordClock: 5");
         }
@@ -1095,7 +1087,7 @@ namespace NeoPixelMatrix {
 
     }
 
-    // Not if this block is used with the control.inBackground block, it will not work #BUG
+    /* Not if this block is used with the control.inBackground block, it will not work #BUG */
     //% block="create word clock, version $version, hour color $hourColor, minute color $minuteColor, word color $wordColor"
     //% version.defl=1
     //% hourColor.shadow="colorNumberPicker"
