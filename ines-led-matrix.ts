@@ -34,7 +34,7 @@ namespace NeoPixelMatrix {
     let matrixHeight = 8; // y
     let currentBrightness = 100; // 0 to 255
     let pollingInterval = 10 // 10ms Interval for polling LED Matrix Interface. Adjust the polling interval as needed.
-    let wordClockDisplayUpdateInterval = 3; // 1 second
+    let wordClockDisplayUpdateInterval = 1; // 1 second
     let pinSlider: DigitalPin = DigitalPin.P1;
     let pinCenterButton: DigitalPin = DigitalPin.P2;
     let pinUpButton: DigitalPin = DigitalPin.P9;
@@ -134,6 +134,149 @@ namespace NeoPixelMatrix {
         '!': [0b00000000, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00000000, 0b00011000, 0b00000000],
         '?': [0b00000000, 0b00111100, 0b01000010, 0b00000100, 0b00001000, 0b00000000, 0b00001000, 0b00000000],
     };
+
+    /* WORD CLOCK */
+    let wordClockMappings: { [key: string]: number[][] } = {
+        'ONE': [
+            [1, 7],
+            [4, 7],
+            [7, 7]
+        ],
+        'TWO': [
+            [0, 6],
+            [1, 6],
+            [1, 7]
+        ],
+        'THREE': [
+            [3, 5],
+            [4, 5],
+            [5, 5],
+            [6, 5],
+            [7, 5]
+        ],
+        'FOUR': [
+            [0, 7],
+            [1, 7],
+            [2, 7],
+            [3, 7]
+        ],
+        'HOUR_FIVE': [
+            [0, 4],
+            [1, 4],
+            [2, 4],
+            [3, 4]
+        ],
+        'MIN_FIVE': [
+            [4, 2],
+            [5, 2],
+            [6, 2],
+            [7, 2]
+        ],
+        'SIX': [
+            [0, 5],
+            [1, 5],
+            [2, 5]
+        ],
+        'SEVEN': [
+            [0, 5],
+            [4, 6],
+            [5, 6],
+            [6, 6],
+            [7, 6]
+        ],
+        'EIGHT': [
+            [3, 4],
+            [4, 4],
+            [5, 4],
+            [6, 4],
+            [7, 4]
+        ],
+        'NINE': [
+            [4, 7],
+            [5, 7],
+            [6, 7],
+            [7, 7]
+        ],
+        'HOUR_TEN': [
+            [7, 4],
+            [7, 5],
+            [7, 6]
+        ],
+        'MIN_TEN': [
+            [2, 0],
+            [4, 0],
+            [5, 0]
+        ],
+        'ELEVEN': [
+            [2, 6],
+            [3, 6],
+            [4, 6],
+            [5, 6],
+            [6, 6],
+            [7, 6]
+        ],
+        'TWELVE': [
+            [0, 6],
+            [1, 6],
+            [2, 6],
+            [3, 6],
+            [5, 6],
+            [6, 6]
+        ],
+        'QUARTER': [
+            [1, 1],
+            [2, 1],
+            [3, 1],
+            [4, 1],
+            [5, 1],
+            [6, 1],
+            [7, 1]
+        ],
+        'TWENTY': [
+            [2, 0],
+            [3, 0],
+            [4, 0],
+            [5, 0],
+            [6, 0],
+            [7, 0]
+        ],
+        'TWENTY_FIVE': [
+            [2, 0],
+            [3, 0],
+            [4, 0],
+            [5, 0],
+            [6, 0],
+            [7, 0],
+            [4, 2],
+            [5, 2],
+            [6, 2],
+            [7, 2]
+        ],
+        'HALF': [
+            [1, 2],
+            [2, 2],
+            [3, 2],
+            [4, 2]
+        ],
+        'PAST': [
+            [2, 3],
+            [3, 3],
+            [4, 3],
+            [5, 3]
+        ],
+        'TO': [
+            [5, 3],
+            [7, 3]
+        ],
+        'ZHAW': [
+            [0, 0],
+            [0, 1],
+            [0, 2],
+            [0, 3]
+        ]
+    };
+
+    /* FUNCTIONS */
 
     function isValidString(input: string): string {
         const allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?():;".split(''); // TODO if problems use let instead of const
@@ -674,223 +817,64 @@ namespace NeoPixelMatrix {
         }
     }
 
-    class ClockTable {
-        public ONE: number[][] = [];
-        public TWO: number[][] = [];
-        public THREE: number[][] = [];
-        public FOUR: number[][] = [];
-        public HOUR_FIVE: number[][] = [];
-        public MIN_FIVE: number[][] = [];
-        public SIX: number[][] = [];
-        public SEVEN: number[][] = [];
-        public EIGHT: number[][] = [];
-        public NINE: number[][] = [];
-        public HOUR_TEN: number[][] = [];
-        public MIN_TEN: number[][] = [];
-        public ELEVEN: number[][] = [];
-        public TWELVE: number[][] = [];
-        public QUARTER: number[][] = [];
-        public TWENTY: number[][] = [];
-        public TWENTY_FIVE: number[][] = [];
-        public HALF: number[][] = [];
-        public PAST: number[][] = [];
-        public TO: number[][] = [];
-        public ZHAW: number[][] = [];
-        public HOURS_MAPPING: { [key: number]: number[][] };
-        public MINUTES_MAPPING: { [key: number]: number[][] | number };
-
-        constructor(version: number = 1) {
-            this.ONE.push([1, 7]);
-            this.ONE.push([4, 7]);
-            this.ONE.push([7, 7]);
-
-            this.TWO.push([0, 6]);
-            this.TWO.push([1, 6]);
-            this.TWO.push([1, 7]);
-
-            this.THREE.push([3, 5]);
-            this.THREE.push([4, 5]);
-            this.THREE.push([5, 5]);
-            this.THREE.push([6, 5]);
-            this.THREE.push([7, 5]);
-
-            this.FOUR.push([0, 7]);
-            this.FOUR.push([1, 7]);
-            this.FOUR.push([2, 7]);
-            this.FOUR.push([3, 7]);
-
-            this.HOUR_FIVE.push([0, 4]);
-            this.HOUR_FIVE.push([1, 4]);
-            this.HOUR_FIVE.push([2, 4]);
-            this.HOUR_FIVE.push([3, 4]);
-
-            this.MIN_FIVE.push([4, 2]);
-            this.MIN_FIVE.push([5, 2]);
-            this.MIN_FIVE.push([6, 2]);
-            this.MIN_FIVE.push([7, 2]);
-
-            this.SIX.push([0, 5]);
-            this.SIX.push([1, 5]);
-            this.SIX.push([2, 5]);
-
-            this.SEVEN.push([0, 5]);
-            this.SEVEN.push([4, 6]);
-            this.SEVEN.push([5, 6]);
-            this.SEVEN.push([6, 6]);
-            this.SEVEN.push([7, 6]);
-
-            this.EIGHT.push([3, 4]);
-            this.EIGHT.push([4, 4]);
-            this.EIGHT.push([5, 4]);
-            this.EIGHT.push([6, 4]);
-            this.EIGHT.push([7, 4]);
-
-            this.NINE.push([4, 7]);
-            this.NINE.push([5, 7]);
-            this.NINE.push([6, 7]);
-            this.NINE.push([7, 7]);
-
-            this.HOUR_TEN.push([7, 4]);
-            this.HOUR_TEN.push([7, 5]);
-            this.HOUR_TEN.push([7, 6]);
-
-            this.MIN_TEN.push([2, 0]);
-            this.MIN_TEN.push([4, 0]);
-            this.MIN_TEN.push([5, 0]);
-
-            this.ELEVEN.push([2, 6]);
-            this.ELEVEN.push([3, 6]);
-            this.ELEVEN.push([4, 6]);
-            this.ELEVEN.push([5, 6]);
-            this.ELEVEN.push([6, 6]);
-            this.ELEVEN.push([7, 6]);
-
-            this.TWELVE.push([0, 6]);
-            this.TWELVE.push([1, 6]);
-            this.TWELVE.push([2, 6]);
-            this.TWELVE.push([3, 6]);
-            this.TWELVE.push([5, 6]);
-            this.TWELVE.push([6, 6]);
-
-            this.QUARTER.push([1, 1]);
-            this.QUARTER.push([2, 1]);
-            this.QUARTER.push([3, 1]);
-            this.QUARTER.push([4, 1]);
-            this.QUARTER.push([5, 1]);
-            this.QUARTER.push([6, 1]);
-            this.QUARTER.push([7, 1]);
-
-            this.TWENTY.push([2, 0]);
-            this.TWENTY.push([3, 0]);
-            this.TWENTY.push([4, 0]);
-            this.TWENTY.push([5, 0]);
-            this.TWENTY.push([6, 0]);
-            this.TWENTY.push([7, 0]);
-
-            this.TWENTY_FIVE.push([2, 0]);
-            this.TWENTY_FIVE.push([3, 0]);
-            this.TWENTY_FIVE.push([4, 0]);
-            this.TWENTY_FIVE.push([5, 0]);
-            this.TWENTY_FIVE.push([6, 0]);
-            this.TWENTY_FIVE.push([7, 0]);
-            this.TWENTY_FIVE.push([4, 2]);
-            this.TWENTY_FIVE.push([5, 2]);
-            this.TWENTY_FIVE.push([6, 2]);
-            this.TWENTY_FIVE.push([7, 2]);
-
-            if (version === 1) {
-                this.HALF.push([0, 2]);
-                this.HALF.push([1, 2]);
-                this.HALF.push([2, 2]);
-                this.HALF.push([3, 2]);
-
-                this.PAST.push([1, 3]);
-                this.PAST.push([2, 3]);
-                this.PAST.push([3, 3]);
-                this.PAST.push([4, 3]);
-
-                this.TO.push([6, 3]);
-                this.TO.push([7, 3]);
-
-                this.ZHAW.push([0, 0]);
-                this.ZHAW.push([0, 1]);
-                this.ZHAW.push([1, 2]);
-                this.ZHAW.push([0, 3]);
-            } else if (version === 2) {
-                this.HALF.push([1, 2]);
-                this.HALF.push([2, 2]);
-                this.HALF.push([3, 2]);
-                this.HALF.push([4, 2]);
-
-                this.PAST.push([2, 3]);
-                this.PAST.push([3, 3]);
-                this.PAST.push([4, 3]);
-                this.PAST.push([5, 3]);
-
-                this.TO.push([5, 3]);
-                this.TO.push([6, 3]);
-
-                this.ZHAW.push([0, 0]);
-                this.ZHAW.push([0, 1]);
-                this.ZHAW.push([0, 2]);
-                this.ZHAW.push([0, 3]);
-            }
-
-            /* Lookup dictionary for wordclock hours */
-            this.HOURS_MAPPING = {
-                0: this.TWELVE,
-                1: this.ONE,
-                2: this.TWO,
-                3: this.THREE,
-                4: this.FOUR,
-                5: this.HOUR_FIVE,
-                6: this.SIX,
-                7: this.SEVEN,
-                8: this.EIGHT,
-                9: this.NINE,
-                10: this.HOUR_TEN,
-                11: this.ELEVEN,
-            };
-
-            /* Lookup dictionary for wordclock minutes */
-            this.MINUTES_MAPPING = {
-                0: 0,
-                5: this.MIN_FIVE,
-                10: this.MIN_TEN,
-                15: this.QUARTER,
-                20: this.TWENTY,
-                25: this.TWENTY_FIVE,
-                30: this.HALF,
-            };
-        }
-    }
-
     class WordClock {
         private _matrix: any;
-        private _clocktable: any;
-
         public hourColor: number;
         public minuteColor: number;
         public wordColor: number;
         public brightness: number;
 
         constructor(version: number = 1, hourColor: number, minuteColor: number, wordColor: number) {
-            this._clocktable = new ClockTable(version);
-            basic.pause(100);
+            basic.pause(10);
             this.hourColor = hourColor;
             this.minuteColor = minuteColor;
             this.wordColor = wordColor;
             this.brightness = currentBrightness;
             this._matrix = strip;
 
-            if (!this._matrix || !this._clocktable) {
-                serialDebugMsg("WordClock: Error - Matrix or ClockTable is not initialized");
+            if (!this._matrix) {
+                serialDebugMsg("WordClock: Error - Matrix (Strip) not initialized");
                 return;
             }
 
             this.displayTime();
             this.waitUntilRefresh();
             serialDebugMsg("WordClock: Word clock initialized");
+        }
+
+        private getHourMapping(hour: number): number[][] {
+            switch (hour) {
+                case 0: return wordClockMappings.TWELVE;
+                case 1: return wordClockMappings.ONE;
+                case 2: return wordClockMappings.TWO;
+                case 3: return wordClockMappings.THREE;
+                case 4: return wordClockMappings.FOUR;
+                case 5: return wordClockMappings.HOUR_FIVE;
+                case 6: return wordClockMappings.SIX;
+                case 7: return wordClockMappings.SEVEN;
+                case 8: return wordClockMappings.EIGHT;
+                case 9: return wordClockMappings.NINE;
+                case 10: return wordClockMappings.HOUR_TEN;
+                case 11: return wordClockMappings.ELEVEN;
+                default:
+                    serialDebugMsg("WordClock getHourMapping: Error - Invalid hour");
+                    return [];
+            }
+        }
+
+        private getMinuteMapping(minute: number): number[][] {
+            switch (minute) {
+                case 0: return [];
+                case 5: return wordClockMappings.MIN_FIVE;
+                case 10: return wordClockMappings.MIN_TEN;
+                case 15: return wordClockMappings.QUARTER;
+                case 20: return wordClockMappings.TWENTY;
+                case 25: return wordClockMappings.TWENTY_FIVE;
+                case 30: return wordClockMappings.HALF;
+                default:
+                    serialDebugMsg("WordClock getMinuteMapping: Error - Invalid minute");
+                    return [];
+            }
         }
 
         private waitUntilRefresh(): void {
@@ -900,7 +884,7 @@ namespace NeoPixelMatrix {
 
         }
 
-        private setClockPixels(pixels: [number, number][], color: number): void {
+        private setClockPixels(pixels: number[][], color: number): void {
             for (let i = 0; i < pixels.length; i++) {
                 const x = pixels[i][0];
                 const y = pixels[i][1];
@@ -911,23 +895,18 @@ namespace NeoPixelMatrix {
         }
 
         public displayTime(): void {
-            if (!this._matrix || !this._clocktable) {
-                serialDebugMsg("WordClock: Error - Matrix or ClockTable is not initialized");
-                return;
-            }
-
             let hours = currentTimeSeconds / 3600;
             let minutes = currentTimeSeconds / 60;
 
             serialDebugMsg("WordClock: hours = " + hours + ", minutes = " + minutes);
-            let modifier: [number, number][];
+            let modifier: number[][];
 
             if (minutes > 32) {
                 hours += 1;
                 minutes = 60 - minutes;
-                modifier = this._clocktable.TO;
+                modifier = wordClockMappings.TO;
             } else {
-                modifier = this._clocktable.PAST;
+                modifier = wordClockMappings.PAST;
             }
             minutes = 5 * Math.round(minutes / 5);
             hours = Math.floor(hours % 12);
@@ -936,177 +915,56 @@ namespace NeoPixelMatrix {
 
             this._matrix.clear();
 
-            // let ONE_TEST: [number, number][] // no work
-            // let ONE_TEST: Array<[number, number]>; // no work
-            //let ONE_TEST: any // no work
-            // let ONE_TEST: [[number, number], [number, number], [number, number]]; // no work
-            // ONE_TEST = [
-            //     [1, 7],
-            //     [4, 7],
-            //     [7, 7],
-            // ];
 
-            // let ONE_TEST: Array<[number, number]> = [ // no work
-            //     [1, 7],
-            //     [4, 7],
-            //     [7, 7],
-            // ];
-
-            // let ONE_TEST = [ // works WTF
-            //     [1, 7],
-            //     [4, 7],
-            //     [7, 7],
-            // ];
-
-            // let ONE_TEST: Array<[number, number]> = []; // no work
-            let ONE_TEST: number[][] = [] // works
-            ONE_TEST.push([1, 7]);
-            ONE_TEST.push([4, 7]);
-            ONE_TEST.push([7, 7]);
-
-            if (Array.isArray(ONE_TEST)) {
-                serialDebugMsg("WordClock: ONE_TEST is an array");
-                basic.pause(10);
-                // Check the length of the array
-                if (ONE_TEST.length > 0) {
-                    serialDebugMsg("WordClock: ONE_TESTE length: " + ONE_TEST.length);
-                    basic.pause(10);
-                    // Access the first element safely
-                    if (Array.isArray(ONE_TEST[0])) {
-                        serialDebugMsg("WordClock: First element of ONE_TEST is an array with length " + ONE_TEST[0].length);
-                        basic.pause(10);
-                        if (ONE_TEST[0].length === 2) {
-                            serialDebugMsg("x1 = " + ONE_TEST[0][0] + ", y1 = " + ONE_TEST[0][1]);
-                        } else {
-                            serialDebugMsg("WordClock: Error - First element of ONE_TEST is not a valid tuple");
-                        }
-                    } else {
-                        serialDebugMsg("WordClock: Error - First element of ONE_TEST is not an array");
-                    }
-                } else {
-                    serialDebugMsg("WordClock: Error - ONE_TEST is an empty array");
-                }
-            } else {
-                serialDebugMsg("WordClock: Error - ONE_TEST is not an array");
-            }
-
-            serialDebugMsg("WordClock: ONE_TEST = " + JSON.stringify(ONE_TEST));
-            serialDebugMsg("WordClock: ONE_TEST[0] = " + JSON.stringify(ONE_TEST[0]));
-            serialDebugMsg("WordClock: ONE_TEST[0][0] = " + JSON.stringify(ONE_TEST[0][0]));
-
-            // Debugging: Check if HOURS_MAPPING[hours] is an array of tuples
-            const hoursMapping = this._clocktable.HOURS_MAPPING[hours];
-            serialDebugMsg("WordClock: HOURS_MAPPING[hours] = " + JSON.stringify(hoursMapping));
-            // basic.pause(1);
-            // if (!Array.isArray(hoursMapping) || !hoursMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
-            //     serialDebugMsg("WordClock: Error - HOURS_MAPPING[hours] is not a valid array of tuples");
-            //     basic.pause(1)
-            //     return;
+            // if (Array.isArray(wordClockMappings.ONE)) {
+            //     serialDebugMsg("WordClock: wordClockMappings.ONE is an array");
+            //     basic.pause(10);
+            //     // Check the length of the array
+            //     if (wordClockMappings.ONE.length > 0) {
+            //         serialDebugMsg("WordClock: wordClockMappings.ONEE length: " + wordClockMappings.ONE.length);
+            //         basic.pause(10);
+            //         // Access the first element safely
+            //         if (Array.isArray(wordClockMappings.ONE[0])) {
+            //             serialDebugMsg("WordClock: First element of wordClockMappings.ONE is an array with length " + wordClockMappings.ONE[0].length);
+            //             basic.pause(10);
+            //             if (wordClockMappings.ONE[0].length === 2) {
+            //                 serialDebugMsg("x1 = " + wordClockMappings.ONE[0][0] + ", y1 = " + wordClockMappings.ONE[0][1]);
+            //             } else {
+            //                 serialDebugMsg("WordClock: Error - First element of wordClockMappings.ONE is not a valid tuple");
+            //             }
+            //         } else {
+            //             serialDebugMsg("WordClock: Error - First element of wordClockMappings.ONE is not an array");
+            //         }
+            //     } else {
+            //         serialDebugMsg("WordClock: Error - wordClockMappings.ONE is an empty array");
+            //     }
+            // } else {
+            //     serialDebugMsg("WordClock: Error - wordClockMappings.ONE is not an array");
             // }
 
-            serialDebugMsg("WordClock: 3.1");
-            basic.pause(10);
+            // serialDebugMsg("WordClock: wordClockMappings.ONE = " + JSON.stringify(wordClockMappings.ONE));
+            // serialDebugMsg("WordClock: wordClockMappings.ONE[0] = " + JSON.stringify(wordClockMappings.ONE[0]));
+            // serialDebugMsg("WordClock: wordClockMappings.ONE[0][0] = " + JSON.stringify(wordClockMappings.ONE[0][0]));
+
+            // Debugging: Check if HOURS_MAPPING[hours] is an array of tuples
+            const hoursMapping = this.getHourMapping(hours);
+            serialDebugMsg("WordClock: HOURS_MAPPING[hours] = " + JSON.stringify(hoursMapping));
+
             if (!hoursMapping) {
                 serialDebugMsg("WordClock: Error - HOURS_MAPPING[hours] is not a valid array of tuples");
             } else {
                 serialDebugMsg("WordClock: HOURS_MAPPING[hours] is a valid");
             }
-            serialDebugMsg("WordClock: 3.1.1");
-            basic.pause(10);
-
-
-            // serialDebugMsg("hoursMapping length" + hoursMapping.length); // doing this freezes code
-            // serialDebugMsg("hoursMapping length" + this._clocktable.HOURS_MAPPING[hours].length); // doing this freezes code
-            serialDebugMsg("WordClock: _clocktable.TWELVE = " + JSON.stringify(this._clocktable.TWELVE));
-            // serialDebugMsg("hoursMapping length" + this._clocktable.TWELVE.length); // doing this freezes code
-            // serialDebugMsg("x1 = " + this._clocktable.TWELVE[0][0] + ", y1 = " + this._clocktable.TWELVE[0][1]);
-            serialDebugMsg("WordClock: 3.1.2");
-            basic.pause(10);
-
-            if (!this._clocktable || !this._clocktable.TWELVE) {
-                serialDebugMsg("WordClock: Error - _clocktable or _clocktable.TWELVE is not defined");
-                return;
-            }
-
-            serialDebugMsg("WordClock: _clocktable.TWELVE type: " + typeof this._clocktable.TWELVE);
-            basic.pause(10);
-            // if (!this._clocktable.TWELVE[0]) { // code crashes here
-            //     serialDebugMsg("WordClock: Error - this._clocktable.TWELVE[0] not a valid array of tuples");
-            // } else {
-            //     serialDebugMsg("WordClock: this._clocktable.TWELVE[0] is a valid");
-            // }
-            // basic.pause(10);
-            // serialDebugMsg("WordClock: _clocktable.TWELVE[0] type: " + typeof this._clocktable.TWELVE[0]); // code crashes here
-            // basic.pause(10);
-            // serialDebugMsg("WordClock: _clocktable.TWELVE[0][0] type: " + typeof this._clocktable.TWELVE[0][0]); // code crashes here
-            // basic.pause(10);
-
-            serialDebugMsg("WordClock: 3.1.2.1");
-            basic.pause(10);
-
-            // Check if this._clocktable.TWELVE is defined and not null
-            if (this._clocktable.TWELVE !== undefined && this._clocktable.TWELVE !== null) {
-                serialDebugMsg("WordClock: _clocktable.TWELVE is defined and not null");
-                serialDebugMsg("WordClock: _clocktable.TWELVE type: " + typeof this._clocktable.TWELVE);
-                serialDebugMsg("WordClock: _clocktable.TWELVE content: " + JSON.stringify(this._clocktable.TWELVE));
-                basic.pause(10);
-
-                // Check if this._clocktable.TWELVE is an array
-                if (Array.isArray(this._clocktable.TWELVE)) {
-                    serialDebugMsg("WordClock: _clocktable.TWELVE is an array");
-                    basic.pause(10);
-                    // Check the length of the array
-                    if (this._clocktable.TWELVE.length > 0) { // code crashes here
-                        serialDebugMsg("WordClock: _clocktable.TWELVE length: " + this._clocktable.TWELVE.length);
-                        basic.pause(10);
-                        // Access the first element safely
-                        if (Array.isArray(this._clocktable.TWELVE[0])) {
-                            serialDebugMsg("WordClock: First element of _clocktable.TWELVE is an array with length " + this._clocktable.TWELVE[0].length);
-                            basic.pause(10);
-                            if (this._clocktable.TWELVE[0].length === 2) {
-                                serialDebugMsg("x1 = " + this._clocktable.TWELVE[0][0] + ", y1 = " + this._clocktable.TWELVE[0][1]);
-                            } else {
-                                serialDebugMsg("WordClock: Error - First element of _clocktable.TWELVE is not a valid tuple");
-                            }
-                        } else {
-                            serialDebugMsg("WordClock: Error - First element of _clocktable.TWELVE is not an array");
-                        }
-                    } else {
-                        serialDebugMsg("WordClock: Error - _clocktable.TWELVE is an empty array");
-                    }
-                } else {
-                    serialDebugMsg("WordClock: Error - _clocktable.TWELVE is not an array");
-                }
-            } else {
-                serialDebugMsg("WordClock: Error - _clocktable.TWELVE is undefined or null");
-            }
-
-            serialDebugMsg("WordClock: 3.1.3");
-            basic.pause(10);
-
-            for (let i = 0; i < 5; i++) {
-                //serialDebugMsg("hoursMapping length" + hoursMapping.length);
-                const x = hoursMapping[i][0];
-                const y = hoursMapping[i][1];
-                serialDebugMsg("WordClock: setClockPixels: Set pixel(" + x + "," + y + ") to color: " + this.hourColor);
-                basic.pause(10);
-                setPixel(x, y, this.hourColor); // no work strip.show(); missing TODO
-
-            }
-
 
             /* Set pixels for hours */
             this.setClockPixels(hoursMapping, this.hourColor);
 
-            serialDebugMsg("WordClock: 3.2");
-            basic.pause(1);
-
             if (minutes !== 0) {
                 /* Set pixels for minutes */
-                const minutesMapping = this._clocktable.MINUTES_MAPPING[minutes];
+                const minutesMapping = this.getMinuteMapping(minutes);
                 serialDebugMsg("WordClock: MINUTES_MAPPING[minutes] = " + JSON.stringify(minutesMapping));
                 if (Array.isArray(minutesMapping) && minutesMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
-                    this.setClockPixels(minutesMapping as [number, number][], this.minuteColor);
+                    this.setClockPixels(minutesMapping as number[][], this.minuteColor);
                 } else {
                     serialDebugMsg("WordClock: Error - MINUTES_MAPPING[minutes] is not a valid array of tuples");
                 }
@@ -1117,14 +975,9 @@ namespace NeoPixelMatrix {
             this._matrix.setBrightness(this.brightness);
             this._matrix.show();
 
-            serialDebugMsg("WordClock: 4");
-
             /* Wait until the next full minute to refresh the display */
             this.waitUntilRefresh();
-            serialDebugMsg("WordClock: 5");
         }
-
-
     }
 
     /* Not if this block is used with the control.inBackground block, it will not work #BUG */
@@ -1134,26 +987,26 @@ namespace NeoPixelMatrix {
     //% minuteColor.shadow="colorNumberPicker"
     //% wordColor.shadow="colorNumberPicker"
     export function createWordClock(version: number = 1, hourColor: number, minuteColor: number, wordColor: number): void {
-        // control.inBackground(() => {
-        const wordClock = new WordClock(version, hourColor, minuteColor, wordColor);
-        basic.pause(100);
-        if (!wordClock) {
-            serialDebugMsg("createWordClock: Error - WordClock object is not initialized");
-        } else {
-            serialDebugMsg("createWordClock: WordClock object initialized successfully");
-        }
-
-        while (true) {
-            try {
-                wordClock.displayTime();
-                // TODO logic for joystick to change colors and time, currently waitUntilRefresh makes it impossible to change time
-            }
-            catch (e) {
-                serialDebugMsg("createWordClock: Error in word clock");
+        control.inBackground(() => {
+            const wordClock = new WordClock(version, hourColor, minuteColor, wordColor);
+            basic.pause(100);
+            if (!wordClock) {
+                serialDebugMsg("createWordClock: Error - WordClock object is not initialized");
+            } else {
+                serialDebugMsg("createWordClock: WordClock object initialized successfully");
             }
 
-        }
-        // });
+            while (true) {
+                try {
+                    wordClock.displayTime();
+                    // TODO logic for joystick to change colors and time, currently waitUntilRefresh makes it impossible to change time
+                }
+                catch (e) {
+                    serialDebugMsg("createWordClock: Error in word clock");
+                }
+
+            }
+        });
     }
 
     //% block="Test LED matrix hardware"
