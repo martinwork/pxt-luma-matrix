@@ -285,7 +285,7 @@ namespace NeoPixelMatrix {
 
     /* Creates thread to poll slider value and execute callback when value changes. */
     //% block="when slider value changed"
-    export function sliderValueChanged(callback: () => void): void {
+    export function sliderValueChangedThread(callback: () => void): void {
         control.inBackground(() => {
             let currentSliderValue = 0;
             while (true) {
@@ -329,45 +329,59 @@ namespace NeoPixelMatrix {
         } else if (pins.digitalReadPin(pinLeftButton) == 0) {
             return "Left\n";
         } else {
-            return "NotPressed";
+            return "NotPressed\n";
         }
     }
 
+
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
-    //% block="when joystick direction: $directionString changed"
-    //% directionNumber.shadow="text"
-    export function joystickDirectionChanged(directionString: string, callback: () => void): void {
-        let direction: JoystickDirection;
-        if (!(directionString === "notPressed" || directionString === "center" || directionString === "up" || directionString === "down" || directionString === "right" || directionString === "left")) {
-            direction = JoystickDirection.Center;
-            serialDebugMsg("joystickDirectionChanged: Invalid directionString. Setting to Center");
-        } else if (directionString === "notPressed") {
-            direction = JoystickDirection.NotPressed;
-        } else if (directionString === "center") {
-            direction = JoystickDirection.Center;
-        }
-        else if (directionString === "up") {
-            direction = JoystickDirection.Up;
-        }
-        else if (directionString === "down") {
-            direction = JoystickDirection.Down;
-        }
-        else if (directionString === "right") {
-            direction = JoystickDirection.Right;
-        }
-        else if (directionString === "left") {
-            direction = JoystickDirection.Left;
-        } else {
-            direction = JoystickDirection.Center;
-            serialDebugMsg("joystickDirectionChanged: Error directionString. Setting to Center");
-        }
+    //% block="when joystick changed"
+    export function joystickChangedThread(callback: () => void): void {
         control.inBackground(() => {
             let currentJoystickDirection: JoystickDirection = 0;
             while (true) {
                 currentJoystickDirection = readJoystick();
-                if (currentJoystickDirection !== lastJoystickDirection) {
+                if (lastJoystickDirection !== currentJoystickDirection) {
                     lastJoystickDirection = currentJoystickDirection;
+                    serialDebugMsg("joystickChangedThread: Joystick direction changed to: " + currentJoystickDirection);
                     callback();
+                }
+                basic.pause(pollingInterval);
+            }
+        });
+    }
+
+    /* Creates thread to poll joystick direction and execute callback when direction changes. */
+    //% block="when joystick direction: $directionString"
+    //% directionNumber.shadow="text"
+    export function joystickDirectionThread(directionString: string, callback: () => void): void {
+        let direction: JoystickDirection;
+        if (directionString === "notPressed") {
+            direction = JoystickDirection.NotPressed;
+        } else if (directionString === "center") {
+            direction = JoystickDirection.Center;
+        }else if (directionString === "up") {
+            direction = JoystickDirection.Up;
+        }else if (directionString === "down") {
+            direction = JoystickDirection.Down;
+        }else if (directionString === "right") {
+            direction = JoystickDirection.Right;
+        }else if (directionString === "left") {
+            direction = JoystickDirection.Left;
+        } else {
+            direction = JoystickDirection.Center;
+            serialDebugMsg("joystickDirectionThread: Error directionString: " + directionString + " is not valid. Setting to Center");
+        }
+        serialDebugMsg("joystickDirectionThread: Selected trigger direction: " + directionString);
+        control.inBackground(() => {
+            let currentJoystickDirection: JoystickDirection = 0;
+            while (true) {
+                currentJoystickDirection = readJoystick();
+                if (lastJoystickDirection !== currentJoystickDirection && direction === currentJoystickDirection) {
+                    serialDebugMsg("joystickDirectionThread: Joystick direction: " + currentJoystickDirection);
+                    callback();
+                } else {
+                    lastJoystickDirection = currentJoystickDirection;
                 }
                 basic.pause(pollingInterval);
             }
