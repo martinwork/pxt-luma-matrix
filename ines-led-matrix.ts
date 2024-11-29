@@ -266,7 +266,7 @@ namespace NeoPixelMatrix {
         ],
         'TO': [
             [5, 3],
-            [7, 3]
+            [6, 3]
         ],
         'ZHAW': [
             [0, 0],
@@ -743,6 +743,8 @@ namespace NeoPixelMatrix {
         const currentTime = control.millis();
         const delay = targetTime - currentTime;
 
+        // serialDebugMsg("sleepUntil: Current time: " + currentTime + " ms Target time: " + targetTime + " ms Delay: " + delay + " ms");
+
         if (delay <= 0) {
             /* If the target time is in the past or now, call the callback immediately. */
         } else {
@@ -878,10 +880,9 @@ namespace NeoPixelMatrix {
         }
 
         private waitUntilRefresh(): void {
-            const nextWakeUpTime = currentTimeSeconds + wordClockDisplayUpdateInterval;
-            serialDebugMsg("WordClock: waitUntilRefresh: Refreshing display, currentTimeSeconds = " + currentTimeSeconds + ", nextWakeUpTime = " + nextWakeUpTime);
-            sleepUntil(nextWakeUpTime * 1000);
-
+            let nextWakeUpTime = currentTimeSeconds + wordClockDisplayUpdateInterval;
+            serialDebugMsg("WordClock: waitUntilRefresh: Refreshing display in " + wordClockDisplayUpdateInterval + " seconds, currentTimeSeconds = " + currentTimeSeconds + ", nextWakeUpTime = " + nextWakeUpTime);
+            sleepUntil(nextWakeUpTime * 1000); // possible overflow
         }
 
         private setClockPixels(pixels: number[][], color: number): void {
@@ -889,18 +890,26 @@ namespace NeoPixelMatrix {
                 const x = pixels[i][0];
                 const y = pixels[i][1];
                 setPixel(x, y, color);
-                serialDebugMsg("WordClock: setClockPixels: Set pixel(" + x + "," + y + ") to color: " + color);
+                //serialDebugMsg("WordClock: setClockPixels: Set pixel(" + x + "," + y + ") to color: " + color);
             }
-            strip.show();
         }
 
         public displayTime(): void {
+            this._matrix.clear();
             let hours = currentTimeSeconds / 3600;
             let minutes = currentTimeSeconds / 60;
 
-            serialDebugMsg("WordClock: hours = " + hours + ", minutes = " + minutes);
-            let modifier: number[][];
+            // setCurrentTime(hours, minutes + 5, 0); // for testing set the current time to the current time
 
+            serialDebugMsg("WordClock: hours = " + hours + ", minutes = " + minutes);
+            
+            /* Ensure minutes are within the valid range. This can happen if we have big time jumps. */
+            if (minutes < 0) {
+                minutes += 60;
+                hours = (hours + 11) % 12; // Adjust hours accordingly
+            }
+            /* Calculate the modifier (past/to) and adjust the hours and minutes accordingly. */
+            let modifier: number[][];
             if (minutes > 32) {
                 hours += 1;
                 minutes = 60 - minutes;
@@ -911,49 +920,15 @@ namespace NeoPixelMatrix {
             minutes = 5 * Math.round(minutes / 5);
             hours = Math.floor(hours % 12);
 
+
+
             serialDebugMsg("WordClock: after conversion, hours = " + hours + ", minutes = " + minutes);
 
-            this._matrix.clear();
-
-
-            // if (Array.isArray(wordClockMappings.ONE)) {
-            //     serialDebugMsg("WordClock: wordClockMappings.ONE is an array");
-            //     basic.pause(10);
-            //     // Check the length of the array
-            //     if (wordClockMappings.ONE.length > 0) {
-            //         serialDebugMsg("WordClock: wordClockMappings.ONEE length: " + wordClockMappings.ONE.length);
-            //         basic.pause(10);
-            //         // Access the first element safely
-            //         if (Array.isArray(wordClockMappings.ONE[0])) {
-            //             serialDebugMsg("WordClock: First element of wordClockMappings.ONE is an array with length " + wordClockMappings.ONE[0].length);
-            //             basic.pause(10);
-            //             if (wordClockMappings.ONE[0].length === 2) {
-            //                 serialDebugMsg("x1 = " + wordClockMappings.ONE[0][0] + ", y1 = " + wordClockMappings.ONE[0][1]);
-            //             } else {
-            //                 serialDebugMsg("WordClock: Error - First element of wordClockMappings.ONE is not a valid tuple");
-            //             }
-            //         } else {
-            //             serialDebugMsg("WordClock: Error - First element of wordClockMappings.ONE is not an array");
-            //         }
-            //     } else {
-            //         serialDebugMsg("WordClock: Error - wordClockMappings.ONE is an empty array");
-            //     }
-            // } else {
-            //     serialDebugMsg("WordClock: Error - wordClockMappings.ONE is not an array");
-            // }
-
-            // serialDebugMsg("WordClock: wordClockMappings.ONE = " + JSON.stringify(wordClockMappings.ONE));
-            // serialDebugMsg("WordClock: wordClockMappings.ONE[0] = " + JSON.stringify(wordClockMappings.ONE[0]));
-            // serialDebugMsg("WordClock: wordClockMappings.ONE[0][0] = " + JSON.stringify(wordClockMappings.ONE[0][0]));
-
-            // Debugging: Check if HOURS_MAPPING[hours] is an array of tuples
             const hoursMapping = this.getHourMapping(hours);
-            serialDebugMsg("WordClock: HOURS_MAPPING[hours] = " + JSON.stringify(hoursMapping));
+            // serialDebugMsg("WordClock: HOURS_MAPPING[hours] = " + JSON.stringify(hoursMapping));
 
             if (!hoursMapping) {
-                serialDebugMsg("WordClock: Error - HOURS_MAPPING[hours] is not a valid array of tuples");
-            } else {
-                serialDebugMsg("WordClock: HOURS_MAPPING[hours] is a valid");
+                serialDebugMsg("WordClock: Error - mapping hours returned not a valid array of tuples");
             }
 
             /* Set pixels for hours */
@@ -962,11 +937,11 @@ namespace NeoPixelMatrix {
             if (minutes !== 0) {
                 /* Set pixels for minutes */
                 const minutesMapping = this.getMinuteMapping(minutes);
-                serialDebugMsg("WordClock: MINUTES_MAPPING[minutes] = " + JSON.stringify(minutesMapping));
+                //serialDebugMsg("WordClock: MINUTES_MAPPING[minutes] = " + JSON.stringify(minutesMapping));
                 if (Array.isArray(minutesMapping) && minutesMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
                     this.setClockPixels(minutesMapping as number[][], this.minuteColor);
                 } else {
-                    serialDebugMsg("WordClock: Error - MINUTES_MAPPING[minutes] is not a valid array of tuples");
+                    serialDebugMsg("WordClock: Error - mapping minutes returned not a valid array of tuples");
                 }
                 /* Set pixels for modifier */
                 this.setClockPixels(modifier, this.wordColor);
