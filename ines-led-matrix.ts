@@ -33,7 +33,7 @@ namespace NeoPixelMatrix {
     let matrixWidth = 8; // x
     let matrixHeight = 8; // y
     let currentBrightness = 100; // 0 to 255
-    let pollingInterval = 100 // 100ms Interval for polling LED Matrix Interface. Adjust the polling interval as needed.
+    let pollingInterval = 10 // 10ms Interval for polling LED Matrix Interface. Adjust the polling interval as needed.
     let wordClockDisplayUpdateInterval = 3; // 1 second
     let pinSlider: DigitalPin = DigitalPin.P1;
     let pinCenterButton: DigitalPin = DigitalPin.P2;
@@ -334,7 +334,8 @@ namespace NeoPixelMatrix {
     }
 
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
-    //% block="when joystick direction:$direction changed"
+    //% block="when joystick direction: $directionString changed"
+    //% directionNumber.shadow="text"
     export function joystickDirectionChanged(directionString: string, callback: () => void): void {
         let direction: JoystickDirection;
         if (!(directionString === "notPressed" || directionString === "center" || directionString === "up" || directionString === "down" || directionString === "right" || directionString === "left")) {
@@ -416,9 +417,9 @@ namespace NeoPixelMatrix {
     export function movingImage(image: Image, color: number, speed: number, direction: Direction): void {
         /* Due to a bug the block is always generated with speed of 0. In this case we set it to 100ms. */
         if (speed < 1) {
-            speed = 100; // 100ms
+            speed = 100; // 901ms
         } else {
-            speed = 1001 - speed; // make 1000 the fstest speed
+            speed = 1001 - speed; // make 1000 the fastest speed, 1 ms
         }
 
         try {
@@ -459,15 +460,15 @@ namespace NeoPixelMatrix {
     //% speed.defl=100 speed.min=1 speed.max=1000
     export function scrollText(text: string, color: number, speed: number): void {
         if (speed < 1) {
-            speed = 100; // 100ms
+            speed = 100; // 901ms
         } else {
-            speed = 1001 - speed; // make 1000 the fstest speed
+            speed = 1001 - speed; // make 1000 the fastest speed, 1 ms
         }
         if (text.length > 255) {
             text = text.substr(0, 255);
-            serialDebugMsg("scrollText: Text is to loong, enything longer than 255 is cut off. \n");
+            serialDebugMsg("scrollText: Text is to long, anything longer than 255 is cut off. \n");
         }
-        text = isValidString(text); // validate text only conaines allowed symbols
+        text = isValidString(text); // validate text only contains allowed symbols
         textArray = getTextArray(text);
         totalWidth = textArray[0].length;
         serialDebugMsg("\nscrollText: beginning Scrolling text: " + text);
