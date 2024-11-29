@@ -1,9 +1,12 @@
-NeoPixelMatrix.sliderValueChanged(function () {
+NeoPixelMatrix.sliderValueChangedThread(function () {
     basic.showNumber(NeoPixelMatrix.readSlider())
     serial.writeValue("slider", NeoPixelMatrix.readSlider())
     NeoPixelMatrix.setCurrentTime(h, m, s)
     serial.writeValue("jostick", NeoPixelMatrix.readJoystick())
     serial.writeString(NeoPixelMatrix.readJoystickText())
+})
+NeoPixelMatrix.joystickDirectionThread("up", function () {
+    NeoPixelMatrix.scrollText("up", 0xff0000, 91)
 })
 let s = 0
 let m = 0

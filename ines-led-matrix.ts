@@ -162,6 +162,19 @@ namespace NeoPixelMatrix {
         }
     }
 
+    function getRandomInt(min: number, max: number): number {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function linearizeInt(input: number, minInput: number, maxInput: number, lowerOutputRangeLimit: number, upperOutputRangeLimit: number): number {
+        /* Calculate the factor of the input value to the allowed range. */
+        let factor = (input - minInput) / (maxInput - minInput);
+        /* Calculate the scaled value */
+        return lowerOutputRangeLimit + factor * (upperOutputRangeLimit - lowerOutputRangeLimit);
+    }
+
     //% block="initialize NeoPixel matrix with pin $pin and brightness $brightness"
     //% brightness.min=0 brightness.max=255
     export function initializeMatrix(pin: DigitalPin = DigitalPin.P0, brightness: number): void {
@@ -352,6 +365,7 @@ namespace NeoPixelMatrix {
     }
 
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
+    /* TODO #BUG when using multiple joystickDirectionThread blocks and the callback function do not finish before executing the other joystickDirectionThread block, microbit crashes. */
     //% block="when joystick direction: $directionString"
     //% directionNumber.shadow="text"
     export function joystickDirectionThread(directionString: string, callback: () => void): void {
@@ -360,28 +374,30 @@ namespace NeoPixelMatrix {
             direction = JoystickDirection.NotPressed;
         } else if (directionString === "center") {
             direction = JoystickDirection.Center;
-        }else if (directionString === "up") {
+        } else if (directionString === "up") {
             direction = JoystickDirection.Up;
-        }else if (directionString === "down") {
+        } else if (directionString === "down") {
             direction = JoystickDirection.Down;
-        }else if (directionString === "right") {
+        } else if (directionString === "right") {
             direction = JoystickDirection.Right;
-        }else if (directionString === "left") {
+        } else if (directionString === "left") {
             direction = JoystickDirection.Left;
         } else {
             direction = JoystickDirection.Center;
             serialDebugMsg("joystickDirectionThread: Error directionString: " + directionString + " is not valid. Setting to Center");
         }
         serialDebugMsg("joystickDirectionThread: Selected trigger direction: " + directionString);
+        basic.pause(getRandomInt(1, 100)); // Wait 1 to 100ms to synchronize threads
         control.inBackground(() => {
+            let lastJoystickDirectionLocal: JoystickDirection = JoystickDirection.NotPressed; // Local state variable
             let currentJoystickDirection: JoystickDirection = 0;
             while (true) {
                 currentJoystickDirection = readJoystick();
-                if (lastJoystickDirection !== currentJoystickDirection && direction === currentJoystickDirection) {
+                if (lastJoystickDirectionLocal !== currentJoystickDirection && direction === currentJoystickDirection) {
                     serialDebugMsg("joystickDirectionThread: Joystick direction: " + currentJoystickDirection);
                     callback();
                 } else {
-                    lastJoystickDirection = currentJoystickDirection;
+                    lastJoystickDirectionLocal = currentJoystickDirection;
                 }
                 basic.pause(pollingInterval);
             }
@@ -426,15 +442,18 @@ namespace NeoPixelMatrix {
 
     //% block="show moving image on NeoPixel matrix $image with color $color and speed $speed in direction $direction"
     //% color.shadow="colorNumberPicker"
-    //% speed.defl=100 speed.min=1 speed.max=1000
+    //% speed.defl=10 speed.min=1 speed.max=100
     //% direction.defl=Direction.Right
     export function movingImage(image: Image, color: number, speed: number, direction: Direction): void {
-        /* Due to a bug the block is always generated with speed of 0. In this case we set it to 100ms. */
+        /* Due to a bug the block is always generated with speed of 0. In this case we set it to the slowest speed. */
         if (speed < 1) {
-            speed = 100; // 901ms
+            speed = 1; // slowest speed
+        } else if (speed > 100) {
+            speed = 100; // fastest speed
         } else {
-            speed = 1001 - speed; // make 1000 the fastest speed, 1 ms
+            speed = 100 - speed; // make 100 the fastest speed
         }
+        speed = linearizeInt(speed, 1, 100, 1, 1000) // Convert speed to ms
 
         try {
             if (direction === Direction.Left) {
@@ -471,13 +490,18 @@ namespace NeoPixelMatrix {
 
     //% block="scroll text $text with color $color and speed $speed"
     //% color.shadow="colorNumberPicker"
-    //% speed.defl=100 speed.min=1 speed.max=1000
+    //% speed.defl=10 speed.min=1 speed.max=100
     export function scrollText(text: string, color: number, speed: number): void {
+        /* Due to a bug the block is always generated with speed of 0. In this case we set it to the slowest speed. */
         if (speed < 1) {
-            speed = 100; // 901ms
+            speed = 1; // slowest speed
+        } else if (speed > 100) {
+            speed = 100; // fastest speed
         } else {
-            speed = 1001 - speed; // make 1000 the fastest speed, 1 ms
+            speed = 100 - speed; // make 100 the fastest speed
         }
+        speed = linearizeInt(speed, 1, 100, 1, 1000) // Convert speed to ms
+
         if (text.length > 255) {
             text = text.substr(0, 255);
             serialDebugMsg("scrollText: Text is to long, anything longer than 255 is cut off. \n");
@@ -550,7 +574,7 @@ namespace NeoPixelMatrix {
                 //serialDebugMsg("getTextArray: pushed zeros");
             } else {
                 serialDebugMsg("getTextArray: Error getting char Data");
-                finalResult = [[0],[0]];
+                finalResult = [[0], [0]];
             }
         }
         //serialDebugMsg("getTextArray: Centering Result");
@@ -883,6 +907,7 @@ namespace NeoPixelMatrix {
                 setPixel(x, y, color);
                 serialDebugMsg("WordClock: setClockPixels: Set pixel(" + x + "," + y + ") to color: " + color);
             }
+            strip.show();
         }
 
         public displayTime(): void {
@@ -1065,7 +1090,7 @@ namespace NeoPixelMatrix {
                 const y = hoursMapping[i][1];
                 serialDebugMsg("WordClock: setClockPixels: Set pixel(" + x + "," + y + ") to color: " + this.hourColor);
                 basic.pause(10);
-                setPixel(x, y, this.hourColor);
+                setPixel(x, y, this.hourColor); // no work strip.show(); missing TODO
 
             }
 
@@ -1131,54 +1156,109 @@ namespace NeoPixelMatrix {
         // });
     }
 
+    //% block="Test LED matrix hardware"
     export function testLedMatrixHW(): void {
         let oldBrightness: number = currentBrightness
-        setBrightness(255);
+
+        /* Test LED Matrix */
+        basic.showString("LED TEST");
+        // scrollText("LED TEST", neopixel.colors(NeoPixelColors.White), 90);
         serialDebugMsg("testLedMatrix: Start testing LED matrix pixels");
+        let colorRed = neopixel.rgb(255, 0, 0);
+        let colorGreen = neopixel.rgb(0, 255, 0);
+        let colorBlue = neopixel.rgb(0, 0, 255);
+        setBrightness(255);
+        clear();
         for (let y = 0; y < 8; y++) {
             for (let x = 0; x < 8; x++) {
-                clear();
-                setOnePixelRGB(x, y, 255, 0, 0);
-                basic.pause(100);
-                clear();
-                setOnePixelRGB(x, y, 0, 255, 0);
-                basic.pause(100);
-                clear();
-                setOnePixelRGB(x, y, 0, 0, 255);
-                basic.pause(100);
+                setPixel(x, y, colorGreen);
             }
         }
+        strip.show();
+        basic.pause(2000);
+        clear();
+        for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+                setPixel(x, y, colorRed);
+            }
+        }
+        strip.show();
+        basic.pause(2000);
+        clear();
+        for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+                setPixel(x, y, colorBlue);
+            }
+        }
+        strip.show();
+        basic.pause(2000);
+        clear();
         setBrightness(oldBrightness);
-        serialDebugMsg("testLedMatrix: Finisched testing LED matrix pixels");
+        serialDebugMsg("testLedMatrix: Finished testing LED matrix pixels");
 
+        /* Test Slider */
+        basic.showString("MOVE SLIDER");
+        // scrollText("MOVE SLIDER", neopixel.colors(NeoPixelColors.White), 90);
         serialDebugMsg("testLedMatrix: Start testing LED matrix slider");
-        if (0 === readSlider()) {
-            serialDebugMsg("testLedMatrix: Slider is 0");
+        /* Set the first pixel to blue during the test. */
+        setPixel(0, 0, colorBlue);
+        strip.show();
+        while (0 !== readSlider()) {
+            basic.pause(pollingInterval);
         }
-        if (1 === readSlider()) {
-            serialDebugMsg("testLedMatrix: Slider is 1");
+        while (1 !== readSlider()) {
+            basic.pause(pollingInterval);
         }
+        while (0 !== readSlider()) {
+            basic.pause(pollingInterval);
+        }
+        /* Set the first pixel to green when the test passed. */
+        setPixel(0, 0, colorGreen);
+        strip.show();
+        serialDebugMsg("testLedMatrix: Slider Works");
+        // basic.showString("SLIDER OK");
+        // scrollText("SLIDER OK", neopixel.colors(NeoPixelColors.White), 90);
 
+        /* Test Joystick */
+        basic.showString("MOVE JOYSTICK");
+        // scrollText("MOVE JOYSTICK", neopixel.colors(NeoPixelColors.White), 90);
         serialDebugMsg("testLedMatrix: Start testing LED matrix joystick");
-        if (0 === readJoystick()) {
-            serialDebugMsg("testLedMatrix: Joystick is NotPressed");
+        /* Set the first pixel to blue during the test. */
+        setPixel(0, 0, colorBlue);
+        strip.show();
+        while (0 !== readJoystick()) {
+            basic.pause(pollingInterval);
         }
-        if (1 === readJoystick()) {
-            serialDebugMsg("testLedMatrix: Joystick is Center");
+        serialDebugMsg("testLedMatrix: Joystick NotPressed works");
+        while (1 !== readJoystick()) {
+            basic.pause(pollingInterval);
         }
-        if (2 === readJoystick()) {
-            serialDebugMsg("testLedMatrix: Joystick is Up");
+        serialDebugMsg("testLedMatrix: Joystick Center works");
+        while (2 !== readJoystick()) {
+            basic.pause(pollingInterval);
         }
-        if (3 === readJoystick()) {
-            serialDebugMsg("testLedMatrix: Joystick is Down");
+        serialDebugMsg("testLedMatrix: Joystick Up works");
+        while (3 !== readJoystick()) {
+            basic.pause(pollingInterval);
         }
-        if (4 === readJoystick()) {
-            serialDebugMsg("testLedMatrix: Joystick is Right");
+        serialDebugMsg("testLedMatrix: Joystick Down works");
+        while (4 !== readJoystick()) {
+            basic.pause(pollingInterval);
         }
-        if (5 === readJoystick()) {
-            serialDebugMsg("testLedMatrix: Joystick is Left");
+        serialDebugMsg("testLedMatrix: Joystick Right works");
+        while (5 !== readJoystick()) {
+            basic.pause(pollingInterval);
         }
+        serialDebugMsg("testLedMatrix: Joystick Left works");
+        /* Set the first pixel to green when the test passed. */
+        setPixel(0, 0, colorGreen);
+        strip.show();
+        // basic.showString("JOYSTICK OK");
+        // scrollText("JOYSTICK OK", neopixel.colors(NeoPixelColors.White), 90);
 
-        serialDebugMsg("testLedMatrix: Finisched testing LED matrix")
+        serialDebugMsg("testLedMatrix: Finished testing LED matrix");
+        basic.showString("ALL OK");
+        clear();
+        scrollText("ALL OK", neopixel.colors(NeoPixelColors.White), 90);
     }
 }
