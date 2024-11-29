@@ -327,15 +327,15 @@ namespace NeoPixelMatrix {
     //% block="read joystick direction as text"
     export function readJoystickText(): string {
         if (pins.digitalReadPin(pinCenterButton) == 0) {
-            return "Center";
+            return "Center\n";
         } else if (pins.digitalReadPin(pinUpButton) == 0) {
-            return "Up";
+            return "Up\n";
         } else if (pins.digitalReadPin(pinDownButton) == 0) {
-            return "Down";
+            return "Down\n";
         } else if (pins.digitalReadPin(pinRightButton) == 0) {
-            return "Right";
+            return "Right\n";
         } else if (pins.digitalReadPin(pinLeftButton) == 0) {
-            return "Left";
+            return "Left\n";
         } else {
             return "NotPressed";
         }
