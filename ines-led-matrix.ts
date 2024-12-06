@@ -34,7 +34,7 @@ namespace NeoPixelMatrix {
     let matrixHeight = 8; // y
     let currentBrightness = 100; // 0 to 255
     let pollingInterval = 10 // 10ms Interval for polling LED Matrix Interface. Adjust the polling interval as needed.
-    let wordClockDisplayUpdateInterval = 60; // in seconds
+    let wordClockDisplayUpdateInterval = 1; // in seconds
     let pinSlider: DigitalPin = DigitalPin.P1;
     let pinCenterButton: DigitalPin = DigitalPin.P2;
     let pinUpButton: DigitalPin = DigitalPin.P9;
@@ -827,7 +827,8 @@ namespace NeoPixelMatrix {
             serialDebugMsg("Invalid seconds. Must be between 0 and 59.");
         } else {
             if (!isUpdatingTime) { // Mutex to prevent updating time while it is being calculated
-                /* Calculate the start time in seconds. */
+                /* Calculate the curet time in seconds. */
+                // serialDebugMsg(`setCurrentTime: Current time is ${currentTimeSeconds}`);
                 isUpdatingTime = true;
                 currentTimeSeconds = hours * 3600 + minutes * 60 + seconds;
                 isUpdatingTime = false;
@@ -859,6 +860,9 @@ namespace NeoPixelMatrix {
                 serialDebugMsg("WordClock: Error - Matrix (Strip) not initialized");
                 return;
             }
+
+            /* DEBUG */
+            serialDebugMsg("WordClock: wordClockMappings = " + JSON.stringify(wordClockMappings));
 
             this.displayTime();
             serialDebugMsg("WordClock: Word clock initialized");
@@ -924,12 +928,12 @@ namespace NeoPixelMatrix {
                 hours = Math.floor((hours + 11) % 12);
             }
 
-            /* for testing the word clock jumping the time, set wordclock update interval to 1 second */
-            if (minutes + 2 >= 60) {
-                setCurrentTime((hours + 0.02) % 24, minutes % 60, 0);
-            } else {
-                setCurrentTime(hours % 24, (minutes + 2) % 60, 0);
-            }
+            // /* for testing the word clock jumping the time, set wordclock update interval to 1 second */
+            // if (minutes + 2 >= 60) {
+            //     setCurrentTime((hours + 0.02) % 24, minutes % 60, 0);
+            // } else {
+            //     setCurrentTime(hours % 24, (minutes + 2) % 60, 0);
+            // }
 
             /* Calculate the modifier (past/to) and adjust the hours and minutes accordingly. */
             let modifierMapping: number[][];
@@ -940,14 +944,16 @@ namespace NeoPixelMatrix {
             } else {
                 modifierMapping = wordClockMappings.PAST;
             }
-            minutes = 5 * Math.round(minutes / 5); // we only display minutes in 5 minute intervals
+            minutes = 5 * Math.round(minutes / 5); // we only display minutes with a resolution of 5 minute
             serialDebugMsg("WordClock: after conversion, hours = " + hours + ", minutes = " + minutes);
 
             const hoursMapping = this.getHourMapping(hours);
-            // serialDebugMsg("WordClock: HOURS_MAPPING[hours] = " + JSON.stringify(hoursMapping));
-
-            if (!hoursMapping) {
+            if (!Array.isArray(hoursMapping) || !hoursMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
                 serialDebugMsg("WordClock: Error - mapping hours returned not a valid array of tuples");
+                serialDebugMsg("WordClock: Mapped hours = " + JSON.stringify(hoursMapping));
+            } else {
+                /* Set pixels for hours */
+                this.setClockPixels(hoursMapping, this.hourColor);
             }
 
             /* Set pixels for hours */
@@ -956,15 +962,20 @@ namespace NeoPixelMatrix {
             if (minutes !== 0) {
                 /* Set pixels for minutes */
                 const minutesMapping = this.getMinuteMapping(minutes);
-                //serialDebugMsg("WordClock: MINUTES_MAPPING[minutes] = " + JSON.stringify(minutesMapping));
                 if (Array.isArray(minutesMapping) && minutesMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
                     this.setClockPixels(minutesMapping as number[][], this.minuteColor);
                 } else {
                     serialDebugMsg("WordClock: Error - mapping minutes returned not a valid array of tuples");
+                    serialDebugMsg("WordClock: Mapped minutes = " + JSON.stringify(minutesMapping));
                 }
 
                 /* Set pixels for modifier */
-                this.setClockPixels(modifierMapping, this.wordColor);
+                if (Array.isArray(modifierMapping) && modifierMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
+                    this.setClockPixels(modifierMapping, this.wordColor);
+                } else {
+                    serialDebugMsg("WordClock: Error - mapping modifier returned not a valid array of tuples");
+                    serialDebugMsg("WordClock: Mapped modifier = " + JSON.stringify(modifierMapping));
+                }
             }
 
             this._matrix.setBrightness(this.brightness);
@@ -993,7 +1004,7 @@ namespace NeoPixelMatrix {
                     /* Increase minutes by 5 */
                     setCurrentTime(hours, (minutes + 5) % 60, 0);
                     break;
-                case JoystickDirection.Up:
+                case JoystickDirection.Left:
                     /* Decrease minutes by 5 */
                     setCurrentTime(hours, (minutes + 55) % 60, 0);
                     break;
@@ -1054,7 +1065,7 @@ namespace NeoPixelMatrix {
                         lock = false;
                     }
                     /* Poll the joystick every 100ms */
-                    basic.pause(100);
+                    basic.pause(1000);
                 }
                 basic.pause(10); // Small delay to prevent tight loop
             }
