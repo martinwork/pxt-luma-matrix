@@ -1295,7 +1295,7 @@ namespace NeoPixelMatrix {
             }
         }
 
-        public startGameLoop(): void {
+        private startGameLoop(): void {
             control.inBackground(() => {
                 while (true) {
                     this.updateGame();
