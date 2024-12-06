@@ -765,6 +765,7 @@ namespace NeoPixelMatrix {
             if (currentTimeSeconds >= 86400) {
                 currentTimeSeconds = 0;
             }
+            // serialDebugMsg("calculateCurrentTime: currentTimeSeconds = " + currentTimeSeconds);
             isUpdatingTime = false;
             missedTimeUpdates = 0;
         } else {
@@ -773,14 +774,34 @@ namespace NeoPixelMatrix {
             return;
         }
         timeUpdateIntervalCounter++;
-        // serialDebugMsg("calculateCurrentTime: currentTimeSeconds = " + currentTimeSeconds);
+    }
+
+    //% block="get current time"
+    export function getCurrentTime(): number {
+        let currentTimeSecondsLocal = 0;
+        if (!isUpdatingTime) { // Mutex to prevent reading time while it is being calculated
+            isUpdatingTime = true;
+            currentTimeSecondsLocal = currentTimeSeconds;
+            isUpdatingTime = false;
+        } else {
+            serialDebugMsg("getCurrentTime: Time is being updated, please try again later.");
+        }
+        return currentTimeSecondsLocal;
     }
 
     //% block="get current time as text"
     export function getCurrentTimeAsText(): string {
-        let hours = Math.floor(currentTimeSeconds / 3600) % 24;
-        let minutes = Math.floor((currentTimeSeconds % 3600) / 60);
-        let seconds = currentTimeSeconds % 60;
+        let currentTimeSecondsLocal = 0;
+        if (!isUpdatingTime) { // Mutex to prevent reading time while it is being calculated
+            isUpdatingTime = true;
+            currentTimeSecondsLocal = currentTimeSeconds;
+            isUpdatingTime = false;
+        } else {
+            serialDebugMsg("getCurrentTimeAsText: Time is being updated, please try again later.");
+        }
+        let hours = Math.floor(currentTimeSecondsLocal / 3600) % 24;
+        let minutes = Math.floor((currentTimeSecondsLocal % 3600) / 60);
+        let seconds = currentTimeSecondsLocal % 60;
 
         /* return the time as a 2D array of numbers. */
         // return [
@@ -880,9 +901,13 @@ namespace NeoPixelMatrix {
         }
 
         private waitUntilRefresh(): void {
-            let nextWakeUpTime = currentTimeSeconds + wordClockDisplayUpdateInterval;
-            serialDebugMsg("WordClock: waitUntilRefresh: Refreshing display in " + wordClockDisplayUpdateInterval + " seconds, currentTimeSeconds = " + currentTimeSeconds + ", nextWakeUpTime = " + nextWakeUpTime);
-            sleepUntil(nextWakeUpTime * 1000); // possible overflow
+            // When time jumps we sleep time jump + update interval, this no good
+            // let currentTimeSecondsLocal = getCurrentTime();
+            // let nextWakeUpTime = currentTimeSecondsLocal + wordClockDisplayUpdateInterval;
+            // serialDebugMsg("WordClock: waitUntilRefresh: Refreshing display in " + wordClockDisplayUpdateInterval + " seconds, currentTimeSeconds = " + currentTimeSecondsLocal + ", nextWakeUpTime = " + nextWakeUpTime);
+            // sleepUntil(nextWakeUpTime * 1000); // possible overflow
+
+            basic.pause(wordClockDisplayUpdateInterval * 1000);
         }
 
         private setClockPixels(pixels: number[][], color: number): void {
@@ -896,32 +921,37 @@ namespace NeoPixelMatrix {
 
         public displayTime(): void {
             this._matrix.clear();
-            let hours = currentTimeSeconds / 3600;
-            let minutes = currentTimeSeconds / 60;
-
-            // setCurrentTime(hours, minutes + 5, 0); // for testing set the current time to the current time
-
+            let currentTimeSecondsLocal = getCurrentTime();
+            let hours = Math.floor((currentTimeSecondsLocal / 3600) % 12);  // ensure hours are between 0 and 11 and are whole numbers
+            let minutes = Math.floor((currentTimeSecondsLocal / 60) % 60); // ensure minutes are between 0 and 59 and are whole numbers
             serialDebugMsg("WordClock: hours = " + hours + ", minutes = " + minutes);
-            
-            /* Ensure minutes are within the valid range. This can happen if we have big time jumps. */
-            if (minutes < 0) {
+
+            // Adjust hours and minutes if minutes are more than 60 or less than 0
+            if (minutes >= 60) {
+                minutes -= 60;
+                hours = Math.floor((hours + 1) % 12);
+            } else if (minutes < 0) {
                 minutes += 60;
-                hours = (hours + 11) % 12; // Adjust hours accordingly
+                hours = Math.floor((hours + 11) % 12);
             }
+
+            // for testing the word clock jumping the time, set wordclock update interval to 1 second
+            if (minutes + 2 >= 60) {
+                setCurrentTime((hours + 0.02) % 24, minutes % 60, 0);
+            } else {
+                setCurrentTime(hours % 24, (minutes + 2) % 60, 0);
+            }
+
             /* Calculate the modifier (past/to) and adjust the hours and minutes accordingly. */
             let modifier: number[][];
             if (minutes > 32) {
-                hours += 1;
+                hours = Math.floor((hours + 1) % 12);
                 minutes = 60 - minutes;
                 modifier = wordClockMappings.TO;
             } else {
                 modifier = wordClockMappings.PAST;
             }
-            minutes = 5 * Math.round(minutes / 5);
-            hours = Math.floor(hours % 12);
-
-
-
+            minutes = 5 * Math.round(minutes / 5); // we only display minutes in 5 minute intervals
             serialDebugMsg("WordClock: after conversion, hours = " + hours + ", minutes = " + minutes);
 
             const hoursMapping = this.getHourMapping(hours);
@@ -950,7 +980,7 @@ namespace NeoPixelMatrix {
             this._matrix.setBrightness(this.brightness);
             this._matrix.show();
 
-            /* Wait until the next full minute to refresh the display */
+            /* Wait to refresh the display */
             this.waitUntilRefresh();
         }
     }
