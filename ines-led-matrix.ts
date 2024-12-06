@@ -1187,6 +1187,7 @@ namespace NeoPixelMatrix {
         private food: number[] = [2, 2]; // Initial position of the food
         private gameInterval: number = 500; // Game update interval in milliseconds
         private isGameOver: boolean = false;
+        private score: number = 0; // Score
 
         constructor() {
             this._matrix = strip;
@@ -1264,6 +1265,8 @@ namespace NeoPixelMatrix {
             if (head[0] === this.food[0] && head[1] === this.food[1]) {
                 this.snake.unshift(head); // Grow the snake
                 this.generateFood();
+                this.score++; // Increment the score
+                serialDebugMsg("SnakeGame: Score: " + this.score);
             } else {
                 this.snake.pop(); // Move the snake
                 this.snake.unshift(head);
@@ -1274,6 +1277,7 @@ namespace NeoPixelMatrix {
             this.isGameOver = true;
             //basic.showString("Game Over");
             scrollText("Game Over", neopixel.colors(NeoPixelColors.White), 90);
+            scrollText("" + this.score, neopixel.colors(NeoPixelColors.Blue), 85);
             control.reset();
         }
 
