@@ -34,7 +34,7 @@ namespace NeoPixelMatrix {
     let matrixHeight = 8; // y
     let currentBrightness = 100; // 0 to 255
     let pollingInterval = 10 // 10ms Interval for polling LED Matrix Interface. Adjust the polling interval as needed.
-    let wordClockDisplayUpdateInterval = 1; // 1 second
+    let wordClockDisplayUpdateInterval = 60; // in seconds
     let pinSlider: DigitalPin = DigitalPin.P1;
     let pinCenterButton: DigitalPin = DigitalPin.P2;
     let pinUpButton: DigitalPin = DigitalPin.P9;
@@ -861,7 +861,6 @@ namespace NeoPixelMatrix {
             }
 
             this.displayTime();
-            this.waitUntilRefresh();
             serialDebugMsg("WordClock: Word clock initialized");
         }
 
@@ -900,16 +899,6 @@ namespace NeoPixelMatrix {
             }
         }
 
-        private waitUntilRefresh(): void {
-            // When time jumps we sleep time jump + update interval, this no good
-            // let currentTimeSecondsLocal = getCurrentTime();
-            // let nextWakeUpTime = currentTimeSecondsLocal + wordClockDisplayUpdateInterval;
-            // serialDebugMsg("WordClock: waitUntilRefresh: Refreshing display in " + wordClockDisplayUpdateInterval + " seconds, currentTimeSeconds = " + currentTimeSecondsLocal + ", nextWakeUpTime = " + nextWakeUpTime);
-            // sleepUntil(nextWakeUpTime * 1000); // possible overflow
-
-            basic.pause(wordClockDisplayUpdateInterval * 1000);
-        }
-
         private setClockPixels(pixels: number[][], color: number): void {
             for (let i = 0; i < pixels.length; i++) {
                 const x = pixels[i][0];
@@ -921,12 +910,12 @@ namespace NeoPixelMatrix {
 
         public displayTime(): void {
             this._matrix.clear();
-            let currentTimeSecondsLocal = getCurrentTime();
+            const currentTimeSecondsLocal = getCurrentTime();
             let hours = Math.floor((currentTimeSecondsLocal / 3600) % 12);  // ensure hours are between 0 and 11 and are whole numbers
             let minutes = Math.floor((currentTimeSecondsLocal / 60) % 60); // ensure minutes are between 0 and 59 and are whole numbers
             serialDebugMsg("WordClock: hours = " + hours + ", minutes = " + minutes);
 
-            // Adjust hours and minutes if minutes are more than 60 or less than 0
+            /* Adjust hours and minutes if minutes are more than 60 or less than 0 */
             if (minutes >= 60) {
                 minutes -= 60;
                 hours = Math.floor((hours + 1) % 12);
@@ -935,7 +924,7 @@ namespace NeoPixelMatrix {
                 hours = Math.floor((hours + 11) % 12);
             }
 
-            // for testing the word clock jumping the time, set wordclock update interval to 1 second
+            /* for testing the word clock jumping the time, set wordclock update interval to 1 second */
             if (minutes + 2 >= 60) {
                 setCurrentTime((hours + 0.02) % 24, minutes % 60, 0);
             } else {
@@ -943,13 +932,13 @@ namespace NeoPixelMatrix {
             }
 
             /* Calculate the modifier (past/to) and adjust the hours and minutes accordingly. */
-            let modifier: number[][];
+            let modifierMapping: number[][];
             if (minutes > 32) {
                 hours = Math.floor((hours + 1) % 12);
                 minutes = 60 - minutes;
-                modifier = wordClockMappings.TO;
+                modifierMapping = wordClockMappings.TO;
             } else {
-                modifier = wordClockMappings.PAST;
+                modifierMapping = wordClockMappings.PAST;
             }
             minutes = 5 * Math.round(minutes / 5); // we only display minutes in 5 minute intervals
             serialDebugMsg("WordClock: after conversion, hours = " + hours + ", minutes = " + minutes);
@@ -973,15 +962,47 @@ namespace NeoPixelMatrix {
                 } else {
                     serialDebugMsg("WordClock: Error - mapping minutes returned not a valid array of tuples");
                 }
+
                 /* Set pixels for modifier */
-                this.setClockPixels(modifier, this.wordColor);
+                this.setClockPixels(modifierMapping, this.wordColor);
             }
 
             this._matrix.setBrightness(this.brightness);
             this._matrix.show();
+        }
 
-            /* Wait to refresh the display */
-            this.waitUntilRefresh();
+        public setTime(): void {
+            let joystickDirection: JoystickDirection = readJoystick();
+            /* If the joystick is not pressed, do nothing */
+            if (joystickDirection == JoystickDirection.NotPressed) {
+                return;
+            }
+            let currentTimeSecondsLocal = getCurrentTime();
+            let hours = Math.floor((currentTimeSecondsLocal / 3600) % 12);  // ensure hours are between 0 and 11 and are whole numbers
+            let minutes = Math.floor((currentTimeSecondsLocal / 60) % 60); // ensure minutes are between 0 and 59 and are whole numbers
+            switch (joystickDirection) {
+                case JoystickDirection.Up:
+                    /* Increase hours by 1 */
+                    setCurrentTime((hours + 1) % 12, minutes, 0);
+                    break;
+                case JoystickDirection.Down:
+                    /* Decrease hours by 1 */
+                    setCurrentTime((hours + 11) % 12, minutes, 0);
+                    break;
+                case JoystickDirection.Right:
+                    /* Increase minutes by 5 */
+                    setCurrentTime(hours, (minutes + 5) % 60, 0);
+                    break;
+                case JoystickDirection.Up:
+                    /* Decrease minutes by 5 */
+                    setCurrentTime(hours, (minutes + 55) % 60, 0);
+                    break;
+                default:
+                    break;
+            }
+
+            /* Display the new time */
+            this.displayTime();
         }
     }
 
@@ -992,24 +1013,50 @@ namespace NeoPixelMatrix {
     //% minuteColor.shadow="colorNumberPicker"
     //% wordColor.shadow="colorNumberPicker"
     export function createWordClock(version: number = 1, hourColor: number, minuteColor: number, wordColor: number): void {
+        const wordClock = new WordClock(version, hourColor, minuteColor, wordColor);
+        basic.pause(100);
+        if (!wordClock) {
+            serialDebugMsg("createWordClock: Error - WordClock object is not initialized");
+        } else {
+            serialDebugMsg("createWordClock: WordClock object initialized successfully");
+        }
+
+        /* Mutex to prevent multiple threads from running at the same time */
+        let lock = false;
+
         control.inBackground(() => {
-            const wordClock = new WordClock(version, hourColor, minuteColor, wordColor);
-            basic.pause(100);
-            if (!wordClock) {
-                serialDebugMsg("createWordClock: Error - WordClock object is not initialized");
-            } else {
-                serialDebugMsg("createWordClock: WordClock object initialized successfully");
-            }
-
             while (true) {
-                try {
-                    wordClock.displayTime();
-                    // TODO logic for joystick to change colors and time, currently waitUntilRefresh makes it impossible to change time
+                if (!lock) {
+                    lock = true;
+                    try {
+                        wordClock.displayTime();
+                    } catch (e) {
+                        serialDebugMsg("createWordClock: Error in word clock");
+                    } finally {
+                        lock = false;
+                    }
+                    /* Wait to refresh the display */
+                    basic.pause(wordClockDisplayUpdateInterval * 1000);
                 }
-                catch (e) {
-                    serialDebugMsg("createWordClock: Error in word clock");
-                }
+                basic.pause(10); // Small delay to prevent tight loop
+            }
+        });
 
+        control.inBackground(() => {
+            while (true) {
+                if (!lock) {
+                    lock = true;
+                    try {
+                        wordClock.setTime();
+                    } catch (e) {
+                        serialDebugMsg("createWordClock: Error in setTime");
+                    } finally {
+                        lock = false;
+                    }
+                    /* Poll the joystick every 100ms */
+                    basic.pause(100);
+                }
+                basic.pause(10); // Small delay to prevent tight loop
             }
         });
     }
