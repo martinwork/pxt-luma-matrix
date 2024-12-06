@@ -248,9 +248,9 @@ namespace NeoPixelMatrix {
             [6, 0],
             [7, 0],
             [4, 2],
-            [5, 2],
-            [6, 2],
-            [7, 2]
+            [5, 2]
+            // [6, 2], // Not enough memory to display this word
+            // [7, 2]
         ],
         'HALF': [
             [1, 2],
@@ -530,7 +530,7 @@ namespace NeoPixelMatrix {
             serialDebugMsg("joystickDirectionThread: Error directionString: " + directionString + " is not valid. Setting to Center");
         }
         serialDebugMsg("joystickDirectionThread: Selected trigger direction: " + directionString);
-        basic.pause(getRandomInt(1, 100)); // Wait 1 to 100ms to synchronize threads
+        basic.pause(getRandomInt(1, 100)); // Wait 1 to 100ms to asynchron threads
         control.inBackground(() => {
             let lastJoystickDirectionLocal: JoystickDirection = JoystickDirection.NotPressed; // Local state variable
             let currentJoystickDirection: JoystickDirection = 0;
@@ -649,7 +649,7 @@ namespace NeoPixelMatrix {
             text = text.substr(0, 255);
             serialDebugMsg("scrollText: Text is to long, anything longer than 255 is cut off. \n");
         }
-        text = isValidString(text); // validate text only contains allowed symbols
+        text = isValidString(text); // validate text to only contains allowed symbols
         textArray = getTextArray(text);
         totalWidth = textArray[0].length;
         serialDebugMsg("\nscrollText: beginning Scrolling text: " + text);
@@ -862,7 +862,7 @@ namespace NeoPixelMatrix {
             }
 
             /* DEBUG */
-            serialDebugMsg("WordClock: wordClockMappings = " + JSON.stringify(wordClockMappings));
+            // serialDebugMsg("WordClock: wordClockMappings = " + JSON.stringify(wordClockMappings));
 
             this.displayTime();
             serialDebugMsg("WordClock: Word clock initialized");
@@ -977,20 +977,19 @@ namespace NeoPixelMatrix {
                     serialDebugMsg("WordClock: Mapped modifier = " + JSON.stringify(modifierMapping));
                 }
             }
-
             this._matrix.setBrightness(this.brightness);
             this._matrix.show();
         }
 
         public setTime(): void {
-            let joystickDirection: JoystickDirection = readJoystick();
+            const joystickDirection: JoystickDirection = readJoystick();
             /* If the joystick is not pressed, do nothing */
             if (joystickDirection == JoystickDirection.NotPressed) {
                 return;
             }
-            let currentTimeSecondsLocal = getCurrentTime();
-            let hours = Math.floor((currentTimeSecondsLocal / 3600) % 12);  // ensure hours are between 0 and 11 and are whole numbers
-            let minutes = Math.floor((currentTimeSecondsLocal / 60) % 60); // ensure minutes are between 0 and 59 and are whole numbers
+            const currentTimeSecondsLocal = getCurrentTime();
+            const hours = Math.floor((currentTimeSecondsLocal / 3600) % 12);  // ensure hours are between 0 and 11 and are whole numbers
+            const minutes = Math.floor((currentTimeSecondsLocal / 60) % 60); // ensure minutes are between 0 and 59 and are whole numbers
             switch (joystickDirection) {
                 case JoystickDirection.Up:
                     /* Increase hours by 1 */
