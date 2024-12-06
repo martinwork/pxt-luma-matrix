@@ -1,3 +1,5 @@
+// a creation by ZHAW, 2024
+// edited by vore and hesu
 namespace NeoPixelMatrix {
     /* ENUMS */
     enum Direction {
@@ -1176,5 +1178,160 @@ namespace NeoPixelMatrix {
         basic.showString("ALL OK");
         clear();
         scrollText("ALL OK", neopixel.colors(NeoPixelColors.White), 90);
+    }
+
+    class SnakeGame {
+        private _matrix: any;
+        private snake: number[][] = [[3, 3]]; // Initial position of the snake
+        private direction: JoystickDirection = JoystickDirection.Right;
+        private food: number[] = [2, 2]; // Initial position of the food
+        private gameInterval: number = 500; // Game update interval in milliseconds
+        private isGameOver: boolean = false;
+
+        constructor() {
+            this._matrix = strip;
+            this.initializeMatrix();
+            this.generateFood();
+            this.drawSnake();
+            this.drawFood();
+            this._matrix.show();
+            this.startGameLoop();
+            this.handleUserInput();
+        }
+
+        private initializeMatrix(): void {
+            this._matrix.setBrightness(currentBrightness);
+            this._matrix.clear();
+            this._matrix.show();
+        }
+
+        private setPixel(x: number, y: number, color: number): void {
+            if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                this._matrix.setPixelColor(y * 8 + x, color);
+            }
+        }
+
+        private drawSnake(): void {
+            for (let segment of this.snake) {
+                this.setPixel(segment[0], segment[1], neopixel.colors(NeoPixelColors.Green));
+            }
+        }
+
+        private drawFood(): void {
+            this.setPixel(this.food[0], this.food[1], neopixel.colors(NeoPixelColors.Red));
+        }
+
+        private generateFood(): void {
+            let x: number;
+            let y: number;
+            do {
+                x = Math.randomRange(0, 7);
+                y = Math.randomRange(0, 7);
+            } while (this.snake.some(segment => segment[0] === x && segment[1] === y));
+            this.food = [x, y];
+        }
+
+        private updateSnake(): void {
+            let head = this.snake[0].slice();
+            switch (this.direction) {
+                case JoystickDirection.Up:
+                    head[1]++;
+                    break;
+                case JoystickDirection.Down:
+                    head[1]--;
+                    break;
+                case JoystickDirection.Left:
+                    head[0]--;
+                    break;
+                case JoystickDirection.Right:
+                    head[0]++;
+                    break;
+            }
+
+            /* Check for collisions with walls */
+            if (head[0] < 0 || head[0] >= 8 || head[1] < 0 || head[1] >= 8) {
+                this.gameOver();
+                return;
+            }
+
+            /* Check for collisions with itself */
+            if (this.snake.some(segment => segment[0] === head[0] && segment[1] === head[1])) {
+                this.gameOver();
+                return;
+            }
+
+            /* Check for food */
+            if (head[0] === this.food[0] && head[1] === this.food[1]) {
+                this.snake.unshift(head); // Grow the snake
+                this.generateFood();
+            } else {
+                this.snake.pop(); // Move the snake
+                this.snake.unshift(head);
+            }
+        }
+
+        private gameOver(): void {
+            this.isGameOver = true;
+            //basic.showString("Game Over");
+            scrollText("Game Over", neopixel.colors(NeoPixelColors.White), 90);
+            control.reset();
+        }
+
+        private updateGame(): void {
+            if (this.isGameOver) return;
+            this._matrix.clear();
+            this.updateSnake();
+            this.drawSnake();
+            this.drawFood();
+            this._matrix.show();
+        }
+
+        private changeDirection(newDirection: JoystickDirection): void {
+            if ((this.direction === JoystickDirection.Up && newDirection !== JoystickDirection.Down) ||
+                (this.direction === JoystickDirection.Down && newDirection !== JoystickDirection.Up) ||
+                (this.direction === JoystickDirection.Left && newDirection !== JoystickDirection.Right) ||
+                (this.direction === JoystickDirection.Right && newDirection !== JoystickDirection.Left)) {
+                this.direction = newDirection;
+            }
+        }
+
+        public startGameLoop(): void {
+            control.inBackground(() => {
+                while (true) {
+                    this.updateGame();
+                    basic.pause(this.gameInterval);
+                }
+            });
+        }
+
+        private handleUserInput(): void {
+            control.inBackground(() => {
+                while (true) {
+                    const joystickDirection = readJoystick();
+                    switch (joystickDirection) {
+                        case JoystickDirection.Up:
+                        case JoystickDirection.Down:
+                        case JoystickDirection.Left:
+                        case JoystickDirection.Right:
+                            this.changeDirection(joystickDirection);
+                            break;
+                    }
+                    basic.pause(pollingInterval); // Polling interval for joystick input
+                }
+            });
+        }
+    }
+
+    //% block="snake game"
+    export function snake(): void {
+        control.inBackground(() => {
+            const snakeGame = new SnakeGame();
+            basic.pause(100);
+            if (!snakeGame) {
+                serialDebugMsg("snake: Error - snakeGame object is not initialized");
+            } else {
+                serialDebugMsg("snake: snakeGame object initialized successfully");
+            }
+        });
     }
 }
