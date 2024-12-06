@@ -1275,9 +1275,28 @@ namespace NeoPixelMatrix {
 
         private gameOver(): void {
             this.isGameOver = true;
-            //basic.showString("Game Over");
-            scrollText("Game Over", neopixel.colors(NeoPixelColors.White), 90);
-            scrollText("" + this.score, neopixel.colors(NeoPixelColors.Blue), 85);
+            if (63 >= this.score) {
+                //basic.showString("Game Over");
+                scrollText("Game Over", neopixel.colors(NeoPixelColors.White), 90);
+                scrollText("" + this.score, neopixel.colors(NeoPixelColors.Blue), 85);
+            } else {
+                scrollText("You Won the Game", neopixel.colors(NeoPixelColors.White), 90);
+                movingImage(
+                    matrix8x8(`
+                        . . . . . . . .
+                        # # # # # # # #
+                        . # # # # # # .
+                        . . # # # # . .
+                        . . . # # . . .
+                        . . . # # . . .
+                        . . . # # . . .
+                        . . # # # # . .
+                        `),
+                    0xffff00,
+                    10,
+                    Direction.Right
+                )
+            }
             control.reset();
         }
 
