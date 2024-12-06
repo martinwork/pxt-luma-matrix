@@ -34,7 +34,7 @@ namespace NeoPixelMatrix {
     let matrixHeight = 8; // y
     let currentBrightness = 100; // 0 to 255
     let pollingInterval = 10 // 10ms Interval for polling LED Matrix Interface. Adjust the polling interval as needed.
-    let wordClockDisplayUpdateInterval = 1; // in seconds
+    let wordClockDisplayUpdateInterval = 60; // in seconds
     let pinSlider: DigitalPin = DigitalPin.P1;
     let pinCenterButton: DigitalPin = DigitalPin.P2;
     let pinUpButton: DigitalPin = DigitalPin.P9;
@@ -57,6 +57,7 @@ namespace NeoPixelMatrix {
     let debugEnabled: boolean = false;
 
     /* Simple 8x8 font */
+    /* TODO: Text Font need to be reworked. */
     let textFont: { [char: string]: number[] } = {
         /* Uppercase letters map */
         'A': [0b00000000, 0b00011000, 0b00100100, 0b01000010, 0b01111110, 0b01000010, 0b01000010, 0b00000000],
@@ -945,7 +946,7 @@ namespace NeoPixelMatrix {
                 modifierMapping = wordClockMappings.PAST;
             }
             minutes = 5 * Math.round(minutes / 5); // we only display minutes with a resolution of 5 minute
-            serialDebugMsg("WordClock: after conversion, hours = " + hours + ", minutes = " + minutes);
+            // serialDebugMsg("WordClock: after conversion, hours = " + hours + ", minutes = " + minutes);
 
             const hoursMapping = this.getHourMapping(hours);
             if (!Array.isArray(hoursMapping) || !hoursMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
