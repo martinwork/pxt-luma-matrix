@@ -950,7 +950,7 @@ namespace NeoPixelMatrix {
             minutes = 5 * Math.round(minutes / 5); // we only display minutes with a resolution of 5 minute
             // serialDebugMsg("WordClock: after conversion, hours = " + hours + ", minutes = " + minutes);
 
-            const hoursMapping = this.getHourMapping(hours);
+            let hoursMapping = this.getHourMapping(hours);
             if (!Array.isArray(hoursMapping) || !hoursMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
                 serialDebugMsg("WordClock: Error - mapping hours returned not a valid array of tuples");
                 serialDebugMsg("WordClock: Mapped hours = " + JSON.stringify(hoursMapping));
@@ -961,16 +961,18 @@ namespace NeoPixelMatrix {
 
             /* Set pixels for hours */
             this.setClockPixels(hoursMapping, this.hourColor);
+            hoursMapping = null; // free memory
 
             if (minutes !== 0) {
                 /* Set pixels for minutes */
-                const minutesMapping = this.getMinuteMapping(minutes);
+                let minutesMapping = this.getMinuteMapping(minutes);
                 if (Array.isArray(minutesMapping) && minutesMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
                     this.setClockPixels(minutesMapping as number[][], this.minuteColor);
                 } else {
                     serialDebugMsg("WordClock: Error - mapping minutes returned not a valid array of tuples");
                     serialDebugMsg("WordClock: Mapped minutes = " + JSON.stringify(minutesMapping));
                 }
+                minutesMapping = null; // free memory
 
                 /* Set pixels for modifier */
                 if (Array.isArray(modifierMapping) && modifierMapping.every((item: [number, number]) => Array.isArray(item) && item.length === 2)) {
@@ -979,6 +981,7 @@ namespace NeoPixelMatrix {
                     serialDebugMsg("WordClock: Error - mapping modifier returned not a valid array of tuples");
                     serialDebugMsg("WordClock: Mapped modifier = " + JSON.stringify(modifierMapping));
                 }
+                modifierMapping = null; // free memory
             }
             this._matrix.setBrightness(this.brightness);
             this._matrix.show();
@@ -992,7 +995,7 @@ namespace NeoPixelMatrix {
             }
             const currentTimeSecondsLocal = getCurrentTime();
             const hours = Math.floor((currentTimeSecondsLocal / 3600) % 12);  // ensure hours are between 0 and 11 and are whole numbers
-            const minutes = Math.floor((currentTimeSecondsLocal / 60) % 60); // ensure minutes are between 0 and 59 and are whole numbers
+            const minutes = Math.floor((currentTimeSecondsLocal / 60) % 60);  // ensure minutes are between 0 and 59 and are whole numbers
             switch (joystickDirection) {
                 case JoystickDirection.Up:
                     /* Increase hours by 1 */
