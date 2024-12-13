@@ -243,7 +243,7 @@ namespace NeoPixelMatrix {
             [6, 0],
             [7, 0]
         ],
-        'TWENTY_FIVE': [
+        'TWENTY_FIVE': [ // currently not used
             [2, 0],
             [3, 0],
             [4, 0],
@@ -898,7 +898,7 @@ namespace NeoPixelMatrix {
                 case 10: return wordClockMappings.MIN_TEN;
                 case 15: return wordClockMappings.QUARTER;
                 case 20: return wordClockMappings.TWENTY;
-                case 25: return wordClockMappings.TWENTY_FIVE;
+                case 25: return wordClockMappings.TWENTY.concat(wordClockMappings.MIN_FIVE); // Instead of TWENTY_FIVE we use TWENTY and MIN_FIVE to fix memory issues
                 case 30: return wordClockMappings.HALF;
                 default:
                     serialDebugMsg("WordClock getMinuteMapping: Error - Invalid minute");
