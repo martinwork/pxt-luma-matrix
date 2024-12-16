@@ -1,5 +1,11 @@
 /* ENUMS */
 
+enum eMatrixVersion {
+    //% block="V1"
+    V1 = 1,
+    //% block="V2"
+    V2 = 2,
+}
 
 enum JoystickDirection {
     //% block="notPressed"

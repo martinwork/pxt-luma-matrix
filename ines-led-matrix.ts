@@ -1,5 +1,7 @@
 // a creation by ZHAW, 2024
 // edited by vore and hesu
+
+//% color=#3162a3 icon="\uf00a" block="InES Matrix"
 namespace NeoPixelMatrix {
 
     enum Direction {
@@ -309,8 +311,8 @@ namespace NeoPixelMatrix {
     }
 
     //% block="initialize NeoPixel matrix with pin $pin and brightness $brightness"
-    //% brightness.min=0 brightness.max=255
-    //% group="Pixels"
+    //% brightness.defl=127 brightness.min=0 brightness.max=255
+    //% group="Pixels" weight=120
     export function initializeMatrix(pin: DigitalPin = DigitalPin.P0, brightness: number): void {
         serial.setBaudRate(BaudRate.BaudRate115200)
         serial.redirectToUSB();
@@ -366,7 +368,7 @@ namespace NeoPixelMatrix {
     }
 
     //% block="clear NeoPixel matrix"
-    //% group="Pixels"
+    //% group="Pixels" weight=110
     export function clear(): void {
         if (strip) {
             strip.clear();
@@ -375,7 +377,8 @@ namespace NeoPixelMatrix {
     }
 
     //% block="set Brightness $brightness"
-    //% group="Pixels"
+    //% brightness.defl=127 brightness.min=0 brightness.max=255
+    //% group="Pixels" weight=109
     export function setBrightness(brightness: number): void {
         currentBrightness = brightness;
         strip.setBrightness(brightness);
@@ -402,7 +405,7 @@ namespace NeoPixelMatrix {
     //% block="set one pixel at x $x y $y to color $color"
     //% x.min=0 x.max=7 y.min=0 y.max=7
     //% color.shadow="colorNumberPicker"
-    //% group="Pixels"
+    //% group="Pixels" weight=108
     export function setOnePixel(x: number, y: number, color: number): void {
         setPixel(x, y, color);
         strip.show();
@@ -412,7 +415,7 @@ namespace NeoPixelMatrix {
     //% block="set one pixel at | x: $x y: $y to RGB colors | R: $R G: $G B: $B"
     //% x.min=0 x.max=7 y.min=0 y.max=7
     //% R.min=0 R.max=255 G.min=0 G.max=255 B.min=0 B.max=255
-    //% group="Pixels"
+    //% group="Pixels" weight=107
     //% blockExternalInputs=true
     export function setOnePixelRGB(x: number, y: number, R: number, G: number, B: number): void {
         R = Math.max(0, Math.min(255, R));
@@ -516,7 +519,7 @@ namespace NeoPixelMatrix {
     //% joydirection.defl=JoystickDirection.Center
     //% directionNumber.shadow="text"
     //% group="Input"
-    export function joystickDirectionThread(direction: JoystickDirection, callback: () => void): void {
+    export function joystickDirectionThread(direction: JoystickDirection, callback: () => void): void { //TODO: Check function and remove commented code
         // let direction: JoystickDirection;
         // if (directionString === "notPressed") {
         //     direction = JoystickDirection.NotPressed;
@@ -554,7 +557,7 @@ namespace NeoPixelMatrix {
 
     /**
      */
-    //% block="Bild8x8"
+    //% block="Image 8x8"
     //% imageLiteral=1
     //% imageLiteralColumns=8
     //% imageLiteralRows=8
@@ -1031,13 +1034,13 @@ namespace NeoPixelMatrix {
     }
 
     /* Not if this block is used with the control.inBackground block, it will not work #BUG */
-    //% block="create word clock, version $version, hour color $hourColor, minute color $minuteColor, word color $wordColor"
-    //% version.defl=1
+    //% block="create word clock version $version hour color $hourColor minute color $minuteColor word color $wordColor"
+    //% version.defl=eMatrixVersion.V1
     //% hourColor.shadow="colorNumberPicker"
     //% minuteColor.shadow="colorNumberPicker"
     //% wordColor.shadow="colorNumberPicker"
     //% group="Clock"
-    export function createWordClock(version: number = 1, hourColor: number, minuteColor: number, wordColor: number): void {
+    export function createWordClock(version: eMatrixVersion, hourColor: number, minuteColor: number, wordColor: number): void {
         const wordClock = new WordClock(version, hourColor, minuteColor, wordColor);
         basic.pause(100);
         if (!wordClock) {
