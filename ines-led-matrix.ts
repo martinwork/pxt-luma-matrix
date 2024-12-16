@@ -56,6 +56,7 @@ namespace NeoPixelMatrix {
         return result;
     }
 
+    //% blockId="Debug_Enable"
     //% block="set serial debugging prints to $enable"
     //% enable.shadow="toggleOnOff"
     //% advanced=true
@@ -113,7 +114,7 @@ namespace NeoPixelMatrix {
         serialDebugMsg("initializeMatrixInterface: pinSlider: " + pinSlider + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
     }
 
-    //% blockId="Matrix_Init_Expert"
+    //% blockId="Matrix_InitExpert"
     //% block="initialize LED Matrix Interface (Expert). \nSlider pin $pinSliderTemp \nCenter button pin $pinCenterButtonTemp \nUp button pin $pinUpButtonTemp \nDown button pin $pinDownButtonTemp \nRight button pin $pinRightButtonTemp \nLeft button pin $pinLeftButtonTemp"
     //% advanced=true
     export function initializeMatrixInterfaceExpert(
@@ -205,6 +206,7 @@ namespace NeoPixelMatrix {
         serialDebugMsg("setOnePixel: Pixel: " + x + "," + y + " is set to color(R,G,B): (" + R + "," + G + "," + B + ")");
     }
 
+    //% blockId="Input_GPIORead"
     //% block="read GPIO $pin"
     //% group="Input"
     export function readGPIO(pin: DigitalPin): number { // Function not really needed, just for debugging
@@ -213,6 +215,7 @@ namespace NeoPixelMatrix {
         return value;
     }
 
+    //% blockId="Input_SliderRead"
     //% block="read slider value"
     //% group="Input"
     export function readSlider(): number {
@@ -220,6 +223,7 @@ namespace NeoPixelMatrix {
     }
 
     /* Creates thread to poll slider value and execute callback when value changes. */
+    //% blockId="Input_SliderCallback"
     //% block="when slider value changed"
     //% group="Input"
     export function sliderValueChangedThread(callback: () => void): void {
@@ -236,6 +240,7 @@ namespace NeoPixelMatrix {
         });
     }
 
+    //% blockId="Input_JoystickRead"
     //% block="read joystick direction"
     //% group="Input"
     export function readJoystick(): number {
@@ -254,6 +259,7 @@ namespace NeoPixelMatrix {
         }
     }
 
+    //% blockId="Input_JoystickReadStr"
     //% block="read joystick direction as text"
     //% group="Input"
     export function readJoystickText(): string {
@@ -274,6 +280,7 @@ namespace NeoPixelMatrix {
 
 
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
+    //% block="Input_JoystickCallback"
     //% block="when joystick changed"
     //% group="Input"
     export function joystickChangedThread(callback: () => void): void {
@@ -293,6 +300,7 @@ namespace NeoPixelMatrix {
 
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
     /* TODO #BUG when using multiple joystickDirectionThread blocks and the callback function do not finish before executing the other joystickDirectionThread block, microbit crashes. */
+    //% blockId="Input_JoystickCallbackDir"
     //% block="when joystick direction: %direction"
     //% direction.defl=eJoystickDirection.Center
     //% group="Input"
@@ -329,7 +337,7 @@ namespace NeoPixelMatrix {
         return im
     }
 
-    //% blockId="Image_Show"
+    //% blockId="Matrix_ImageStatic"
     //% block="show image on NeoPixel matrix $image with color $color"
     //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
@@ -355,7 +363,7 @@ namespace NeoPixelMatrix {
         im = <Image><any>'';
     }
 
-    //% blockId="Image_ShowMoving"
+    //% blockId="Matrix_ImageMoving"
     //% block="show moving image on NeoPixel matrix $image with color $color and speed $speed in direction $direction"
     //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
@@ -405,7 +413,7 @@ namespace NeoPixelMatrix {
         }
     }
 
-
+    //% blockId="Matrix_TextScroll"
     //% block="scroll text $text with color $color and speed $speed"
     //% color.shadow="colorNumberPicker"
     //% speed.defl=10 speed.min=1 speed.max=100
@@ -552,6 +560,7 @@ namespace NeoPixelMatrix {
         timeUpdateIntervalCounter++;
     }
 
+    //% blockId="Clock_TimeGet"
     //% block="get current time"
     //% group="Clock"
     export function getCurrentTime(): number {
@@ -566,6 +575,7 @@ namespace NeoPixelMatrix {
         return currentTimeSecondsLocal;
     }
 
+    //% blockId="Clock_TimeGetStr"
     //% block="get current time as text"
     //% group="Clock"
     export function getCurrentTimeAsText(): string {
@@ -591,6 +601,7 @@ namespace NeoPixelMatrix {
     }
 
     /* TODO Bug in block no slider for setting time, only works with variables. */
+    //% blockId="Clock_TimeSet"
     //% block="set current time to $hours:$minutes:$seconds"
     //% hours.min=0 hours.max=23
     //% minutes.min = 0 minutes.max = 59
@@ -799,6 +810,7 @@ namespace NeoPixelMatrix {
     }
 
     /* Not if this block is used with the control.inBackground block, it will not work #BUG */
+    //% blockId="Clock_CreateWordClock"
     //% block="create word clock version $version hour color $hourColor minute color $minuteColor word color $wordColor"
     //% version.defl=eMatrixVersion.V1
     //% hourColor.shadow="colorNumberPicker"
@@ -854,6 +866,7 @@ namespace NeoPixelMatrix {
         });
     }
 
+    //% blockId="Debug_MatrixHardware"
     //% block="Test LED matrix hardware"
     //% advanced=true
     export function testLedMatrixHW(): void {
@@ -1126,7 +1139,8 @@ namespace NeoPixelMatrix {
         }
     }
 
-    //% block="snake game"
+    //% blockId="Game_Snake"
+    //% block="Snake Game"
     //% subcategory="Games"
     export function snake(): void {
         control.inBackground(() => {
