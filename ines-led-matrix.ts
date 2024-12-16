@@ -310,6 +310,7 @@ namespace NeoPixelMatrix {
         return lowerOutputRangeLimit + factor * (upperOutputRangeLimit - lowerOutputRangeLimit);
     }
 
+    //% blockId="Matrix_Init"
     //% block="initialize NeoPixel matrix with pin $pin and brightness $brightness"
     //% brightness.defl=127 brightness.min=0 brightness.max=255
     //% group="Pixels" weight=120
@@ -340,6 +341,7 @@ namespace NeoPixelMatrix {
         serialDebugMsg("initializeMatrixInterface: pinSlider: " + pinSlider + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
     }
 
+    //% blockId="Matrix_Init_Expert"
     //% block="initialize LED Matrix Interface (Expert). \nSlider pin $pinSliderTemp \nCenter button pin $pinCenterButtonTemp \nUp button pin $pinUpButtonTemp \nDown button pin $pinDownButtonTemp \nRight button pin $pinRightButtonTemp \nLeft button pin $pinLeftButtonTemp"
     //% advanced=true
     export function initializeMatrixInterfaceExpert(
@@ -367,6 +369,7 @@ namespace NeoPixelMatrix {
         serialDebugMsg("initializeMatrixInterface: pinSlider: " + pinSlider + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
     }
 
+    //% blockId="Matrix_Clear"
     //% block="clear NeoPixel matrix"
     //% group="Pixels" weight=110
     export function clear(): void {
@@ -376,6 +379,7 @@ namespace NeoPixelMatrix {
         }
     }
 
+    //% blockId="Matrix_Brightness"
     //% block="set Brightness $brightness"
     //% brightness.defl=127 brightness.min=0 brightness.max=255
     //% group="Pixels" weight=109
@@ -402,6 +406,7 @@ namespace NeoPixelMatrix {
         }
     }
 
+    //% blockId="Matrix_SetPixelColor"
     //% block="set one pixel at x $x y $y to color $color"
     //% x.min=0 x.max=7 y.min=0 y.max=7
     //% color.shadow="colorNumberPicker"
@@ -412,6 +417,7 @@ namespace NeoPixelMatrix {
         serialDebugMsg("setOnePixel: Pixel: " + x + "," + y + " is set to color: " + color);
     }
 
+    //% blockId="Matrix_SetPixelRGB"
     //% block="set one pixel at | x: $x y: $y to RGB colors | R: $R G: $G B: $B"
     //% x.min=0 x.max=7 y.min=0 y.max=7
     //% R.min=0 R.max=255 G.min=0 G.max=255 B.min=0 B.max=255
@@ -557,6 +563,7 @@ namespace NeoPixelMatrix {
 
     /**
      */
+    //% blockId="Image_8x8"
     //% block="Image 8x8"
     //% imageLiteral=1
     //% imageLiteralColumns=8
@@ -568,7 +575,9 @@ namespace NeoPixelMatrix {
         return im
     }
 
+    //% blockId="Image_Show"
     //% block="show image on NeoPixel matrix $image with color $color"
+    //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
     //% group="Pixels"
     export function showImage(image: Image, color: number): void {
@@ -592,7 +601,9 @@ namespace NeoPixelMatrix {
         im = <Image><any>'';
     }
 
+    //% blockId="Image_ShowMoving"
     //% block="show moving image on NeoPixel matrix $image with color $color and speed $speed in direction $direction"
+    //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
     //% speed.defl=10 speed.min=1 speed.max=100
     //% direction.defl=Direction.Right
