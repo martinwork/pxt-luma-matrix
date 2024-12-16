@@ -1,5 +1,20 @@
-// a creation by ZHAW, 2024
-// edited by vore and hesu
+/* ------------------------------------------------------------------
+ * --  _____       ______  _____                                    -
+ * -- |_   _|     |  ____|/ ____|                                   -
+ * --   | |  _ __ | |__  | (___    Institute of Embedded Systems    -
+ * --   | | | '_ \|  __|  \___ \   Zurich University of             -
+ * --  _| |_| | | | |____ ____) |  Applied Sciences                 -
+ * -- |_____|_| |_|______|_____/   8401 Winterthur, Switzerland     -
+ * ------------------------------------------------------------------
+ * --
+ * -- File:	    ines-led-matrix.ts
+ * -- Project:  micro:bit InES Matrix
+ * -- Date:	    16.12.2024
+ * -- Author:   vore, hesu, ebep
+ * --
+ * ------------------------------------------------------------------
+ */
+
 
 //% color=#3162a3 icon="\uf00a" block="InES Matrix"
 namespace NeoPixelMatrix {
@@ -331,17 +346,17 @@ namespace NeoPixelMatrix {
     //% imageLiteralColumns=8
     //% imageLiteralRows=8
     //% shim=images::createImage
-    //% group="Pixels" weight=90
+    //% group="Pixels" weight=60
     export function matrix8x8(i: string): Image {
         im = <Image><any>i;
         return im
     }
 
     //% blockId="Matrix_ImageStatic"
-    //% block="show image on NeoPixel matrix $image with color $color"
+    //% block="show image on NeoPixel matrix | $image | with color $color"
     //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
-    //% group="Pixels"
+    //% group="Pixels" weight=70
     export function showImage(image: Image, color: number): void {
         try {
             let imagewidth = image.width();
@@ -364,12 +379,12 @@ namespace NeoPixelMatrix {
     }
 
     //% blockId="Matrix_ImageMoving"
-    //% block="show moving image on NeoPixel matrix $image with color $color and speed $speed in direction $direction"
+    //% block="show moving image on NeoPixel matrix | $image with color $color and speed $speed in direction $direction"
     //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
     //% speed.defl=10 speed.min=1 speed.max=100
     //% direction.defl=eDirection.Right
-    //% group="Pixels"
+    //% group="Pixels" weight=69
     export function movingImage(image: Image, color: number, speed: number, direction: eDirection): void {
         /* Due to a bug the block is always generated with speed of 0. In this case we set it to the slowest speed. */
         if (speed < 1) {
@@ -417,7 +432,7 @@ namespace NeoPixelMatrix {
     //% block="scroll text $text with color $color and speed $speed"
     //% color.shadow="colorNumberPicker"
     //% speed.defl=10 speed.min=1 speed.max=100
-    //% group="Pixels"
+    //% group="Pixels" weight=71
     export function scrollText(text: string, color: number, speed: number): void {
         /* Due to a bug the block is always generated with speed of 0. In this case we set it to the slowest speed. */
         if (speed < 1) {
