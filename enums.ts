@@ -22,7 +22,7 @@ enum eMatrixVersion {
     V2 = 2,
 }
 
-enum JoystickDirection {
+enum eJoystickDirection {
     //% block="notPressed"
     NotPressed = 0,
     //% block="center"
@@ -35,4 +35,11 @@ enum JoystickDirection {
     Right = 4,
     //% block="left"
     Left = 5
+}
+
+enum eDirection {
+    //% block="right"
+    Right = 0,
+    //% block="left"
+    Left = 1
 }

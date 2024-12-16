@@ -10,7 +10,8 @@
         "main.ts",
         "README.md",
         "ines-led-matrix.ts",
-        "enums.ts"
+        "enums.ts",
+        "matrix-lut.ts"
     ],
     "testFiles": [
         "test.ts"

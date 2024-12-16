@@ -4,14 +4,6 @@
 //% color=#3162a3 icon="\uf00a" block="InES Matrix"
 namespace NeoPixelMatrix {
 
-    enum Direction {
-        //% block="right"
-        Right = 0,
-        //% block="left"
-        Left = 1
-    }
-
-
     /* GLOBAL VARIABLES */
     const startTime = control.millis();
     let currentTimeSeconds: number = 0;
@@ -33,7 +25,7 @@ namespace NeoPixelMatrix {
     let pinLeftButton: DigitalPin = DigitalPin.P12;
     let counter = 0;
     let lastSliderValue = readSlider(); // used for sliderValueChanged
-    let lastJoystickDirection: JoystickDirection = JoystickDirection.NotPressed; // used for joystickDirectionChanged
+    let lastJoystickDirection: eJoystickDirection = eJoystickDirection.NotPressed; // used for joystickDirectionChanged
     let result: number[][] = [];
     let binaryArray: number[] = [];
     let finalResult: number[][] = [];
@@ -46,226 +38,6 @@ namespace NeoPixelMatrix {
     let index: number = 0;
     let debugEnabled: boolean = false;
 
-    /* Simple 8x8 font */
-    /* TODO: Text Font need to be reworked. */
-    let textFont: { [char: string]: number[] } = {
-        /* Uppercase letters map */
-        'A': [0b00000000, 0b00011000, 0b00100100, 0b01000010, 0b01111110, 0b01000010, 0b01000010, 0b00000000],
-        'B': [0b00000000, 0b01111000, 0b01000100, 0b01111000, 0b01000100, 0b01000100, 0b01111000, 0b00000000],
-        'C': [0b00000000, 0b00111100, 0b01000010, 0b01000000, 0b01000000, 0b01000010, 0b00111100, 0b00000000],
-        'D': [0b00000000, 0b01111000, 0b01000100, 0b01000010, 0b01000010, 0b01000100, 0b01111000, 0b00000000],
-        'E': [0b00000000, 0b01111110, 0b01000000, 0b01111000, 0b01000000, 0b01000000, 0b01111110, 0b00000000],
-        'F': [0b00000000, 0b01111110, 0b01000000, 0b01111000, 0b01000000, 0b01000000, 0b01000000, 0b00000000],
-        'G': [0b00000000, 0b00111100, 0b01000010, 0b01000000, 0b01001110, 0b01000010, 0b00111100, 0b00000000],
-        'H': [0b00000000, 0b01000010, 0b01000010, 0b01111110, 0b01000010, 0b01000010, 0b01000010, 0b00000000],
-        'I': [0b00000000, 0b00111100, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00111100, 0b00000000],
-        'J': [0b00000000, 0b00011110, 0b00000100, 0b00000100, 0b00000100, 0b01000100, 0b00111000, 0b00000000],
-        'K': [0b00000000, 0b01000010, 0b01000100, 0b01001000, 0b01110000, 0b01001000, 0b01000100, 0b00000000],
-        'L': [0b00000000, 0b01000000, 0b01000000, 0b01000000, 0b01000000, 0b01000000, 0b01111110, 0b00000000],
-        'M': [0b00000000, 0b01000010, 0b01100110, 0b01011010, 0b01000010, 0b01000010, 0b01000010, 0b00000000],
-        'N': [0b00000000, 0b01000010, 0b01100010, 0b01010010, 0b01001010, 0b01000110, 0b01000010, 0b00000000],
-        'O': [0b00000000, 0b00111100, 0b01000010, 0b01000010, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        'P': [0b00000000, 0b01111000, 0b01000100, 0b01000100, 0b01111000, 0b01000000, 0b01000000, 0b00000000],
-        'Q': [0b00000000, 0b00111100, 0b01000010, 0b01000010, 0b01001010, 0b01000100, 0b00111010, 0b00000000],
-        'R': [0b00000000, 0b01111000, 0b01000100, 0b01000100, 0b01111000, 0b01001000, 0b01000100, 0b00000000],
-        'S': [0b00000000, 0b00111100, 0b01000010, 0b00110000, 0b00001100, 0b01000010, 0b00111100, 0b00000000],
-        'T': [0b00000000, 0b01111110, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00000000],
-        'U': [0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        'V': [0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b00100100, 0b00100100, 0b00011000, 0b00000000],
-        'W': [0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b01011010, 0b01100110, 0b01000010, 0b00000000],
-        'X': [0b00000000, 0b01000010, 0b00100100, 0b00011000, 0b00011000, 0b00100100, 0b01000010, 0b00000000],
-        'Y': [0b00000000, 0b01000010, 0b00100100, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00000000],
-        'Z': [0b00000000, 0b01111110, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b01111110, 0b00000000],
-        ' ': [0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000],
-        /* Lowercase letters map */
-        'a': [0b00000000, 0b00000000, 0b00111100, 0b00000010, 0b00111110, 0b01000010, 0b00111110, 0b00000000],
-        'b': [0b00000000, 0b01000000, 0b01000000, 0b01111100, 0b01000010, 0b01000010, 0b01111100, 0b00000000],
-        'c': [0b00000000, 0b00000000, 0b00111100, 0b01000000, 0b01000000, 0b01000010, 0b00111100, 0b00000000],
-        'd': [0b00000000, 0b00000010, 0b00000010, 0b00111110, 0b01000010, 0b01000010, 0b00111110, 0b00000000],
-        'e': [0b00000000, 0b00000000, 0b00111100, 0b01000010, 0b01111110, 0b01000000, 0b00111100, 0b00000000],
-        'f': [0b00000000, 0b00001100, 0b00010010, 0b00010000, 0b01111100, 0b00010000, 0b00010000, 0b00000000],
-        'g': [0b00000000, 0b00000000, 0b00111110, 0b01000010, 0b00111110, 0b00000010, 0b01111100, 0b00000000],
-        'h': [0b00000000, 0b01000000, 0b01000000, 0b01111100, 0b01000010, 0b01000010, 0b01000010, 0b00000000],
-        'i': [0b00000000, 0b00000000, 0b00011000, 0b00000000, 0b00111000, 0b00001000, 0b00111100, 0b00000000],
-        'j': [0b00000000, 0b00000000, 0b00001100, 0b00000000, 0b00011100, 0b00000100, 0b00111100, 0b00000000],
-        'k': [0b00000000, 0b01000000, 0b01000010, 0b01000100, 0b01111000, 0b01000100, 0b01000010, 0b00000000],
-        'l': [0b00000000, 0b00110000, 0b00001000, 0b00001000, 0b00001000, 0b00001000, 0b00111100, 0b00000000],
-        'm': [0b00000000, 0b00000000, 0b01100100, 0b01011010, 0b01000010, 0b01000010, 0b01000010, 0b00000000],
-        'n': [0b00000000, 0b00000000, 0b01111000, 0b01000100, 0b01000100, 0b01000100, 0b01000100, 0b00000000],
-        'o': [0b00000000, 0b00000000, 0b00111100, 0b01000010, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        'p': [0b00000000, 0b00000000, 0b01111100, 0b01000010, 0b01111100, 0b01000000, 0b01000000, 0b00000000],
-        'q': [0b00000000, 0b00000000, 0b00111110, 0b01000010, 0b00111110, 0b00000010, 0b00000010, 0b00000000],
-        'r': [0b00000000, 0b00000000, 0b01011100, 0b01100010, 0b01000000, 0b01000000, 0b01000000, 0b00000000],
-        's': [0b00000000, 0b00000000, 0b00111110, 0b01000000, 0b00111100, 0b00000010, 0b01111100, 0b00000000],
-        't': [0b00000000, 0b00000000, 0b00010000, 0b01111100, 0b00010000, 0b00010010, 0b00001100, 0b00000000],
-        'u': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b01000110, 0b00111010, 0b00000000],
-        'v': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b00100100, 0b00100100, 0b00011000, 0b00000000],
-        'w': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b01011010, 0b01100110, 0b01000010, 0b00000000],
-        'x': [0b00000000, 0b00000000, 0b01000010, 0b00100100, 0b00011000, 0b00100100, 0b01000010, 0b00000000],
-        'y': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b00111110, 0b00000010, 0b00111100, 0b00000000],
-        'z': [0b00000000, 0b00000000, 0b01111110, 0b00000100, 0b00001000, 0b00100000, 0b01111110, 0b00000000],
-        /* Number map */
-        '0': [0b00000000, 0b00111100, 0b01000010, 0b01000110, 0b01001010, 0b01010010, 0b00111100, 0b00000000],
-        '1': [0b00000000, 0b00011000, 0b00101000, 0b00001000, 0b00001000, 0b00001000, 0b01111110, 0b00000000],
-        '2': [0b00000000, 0b00111100, 0b01000010, 0b00000010, 0b00011100, 0b00100000, 0b01111110, 0b00000000],
-        '3': [0b00000000, 0b00111100, 0b01000010, 0b00001100, 0b00000010, 0b01000010, 0b00111100, 0b00000000],
-        '4': [0b00000000, 0b00000100, 0b00001100, 0b00010100, 0b00100100, 0b01111110, 0b00000100, 0b00000000],
-        '5': [0b00000000, 0b01111110, 0b01000000, 0b01111100, 0b00000010, 0b01000010, 0b00111100, 0b00000000],
-        '6': [0b00000000, 0b00111100, 0b01000000, 0b01111100, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        '7': [0b00000000, 0b01111110, 0b00000010, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b00000000],
-        '8': [0b00000000, 0b00111100, 0b01000010, 0b00111100, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        '9': [0b00000000, 0b00111100, 0b01000010, 0b00111110, 0b00000010, 0b01000010, 0b00111100, 0b00000000],
-        /* Symbols map */
-        '(': [0b00000000, 0b00001100, 0b00010000, 0b00100000, 0b00100000, 0b00010000, 0b00001100, 0b00000000],
-        ')': [0b00000000, 0b00110000, 0b00001000, 0b00000100, 0b00000100, 0b00001000, 0b00110000, 0b00000000],
-        ':': [0b00000000, 0b00000000, 0b00011000, 0b00011000, 0b00000000, 0b00011000, 0b00011000, 0b00000000],
-        ';': [0b00000000, 0b00000000, 0b00011000, 0b00011000, 0b00000000, 0b00011000, 0b00001000, 0b00010000],
-        '.': [0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00011000, 0b00011000, 0b00000000],
-        ',': [0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00011000, 0b00001000, 0b00010000],
-        '!': [0b00000000, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00000000, 0b00011000, 0b00000000],
-        '?': [0b00000000, 0b00111100, 0b01000010, 0b00000100, 0b00001000, 0b00000000, 0b00001000, 0b00000000],
-    };
-
-    /* WORD CLOCK */
-    let wordClockMappings: { [key: string]: number[][] } = {
-        'ONE': [
-            [1, 7],
-            [4, 7],
-            [7, 7]
-        ],
-        'TWO': [
-            [0, 6],
-            [1, 6],
-            [1, 7]
-        ],
-        'THREE': [
-            [3, 5],
-            [4, 5],
-            [5, 5],
-            [6, 5],
-            [7, 5]
-        ],
-        'FOUR': [
-            [0, 7],
-            [1, 7],
-            [2, 7],
-            [3, 7]
-        ],
-        'HOUR_FIVE': [
-            [0, 4],
-            [1, 4],
-            [2, 4],
-            [3, 4]
-        ],
-        'MIN_FIVE': [
-            [4, 2],
-            [5, 2],
-            [6, 2],
-            [7, 2]
-        ],
-        'SIX': [
-            [0, 5],
-            [1, 5],
-            [2, 5]
-        ],
-        'SEVEN': [
-            [0, 5],
-            [4, 6],
-            [5, 6],
-            [6, 6],
-            [7, 6]
-        ],
-        'EIGHT': [
-            [3, 4],
-            [4, 4],
-            [5, 4],
-            [6, 4],
-            [7, 4]
-        ],
-        'NINE': [
-            [4, 7],
-            [5, 7],
-            [6, 7],
-            [7, 7]
-        ],
-        'HOUR_TEN': [
-            [7, 4],
-            [7, 5],
-            [7, 6]
-        ],
-        'MIN_TEN': [
-            [2, 0],
-            [4, 0],
-            [5, 0]
-        ],
-        'ELEVEN': [
-            [2, 6],
-            [3, 6],
-            [4, 6],
-            [5, 6],
-            [6, 6],
-            [7, 6]
-        ],
-        'TWELVE': [
-            [0, 6],
-            [1, 6],
-            [2, 6],
-            [3, 6],
-            [5, 6],
-            [6, 6]
-        ],
-        'QUARTER': [
-            [1, 1],
-            [2, 1],
-            [3, 1],
-            [4, 1],
-            [5, 1],
-            [6, 1],
-            [7, 1]
-        ],
-        'TWENTY': [
-            [2, 0],
-            [3, 0],
-            [4, 0],
-            [5, 0],
-            [6, 0],
-            [7, 0]
-        ],
-        'TWENTY_FIVE': [ // currently not used
-            [2, 0],
-            [3, 0],
-            [4, 0],
-            [5, 0],
-            [6, 0],
-            [7, 0],
-            [4, 2],
-            [5, 2]
-            // [6, 2], // Not enough memory to display this word
-            // [7, 2]
-        ],
-        'HALF': [
-            [1, 2],
-            [2, 2],
-            [3, 2],
-            [4, 2]
-        ],
-        'PAST': [
-            [2, 3],
-            [3, 3],
-            [4, 3],
-            [5, 3]
-        ],
-        'TO': [
-            [5, 3],
-            [6, 3]
-        ],
-        'ZHAW': [
-            [0, 0],
-            [0, 1],
-            [0, 2],
-            [0, 3]
-        ]
-    };
 
     /* FUNCTIONS */
 
@@ -468,17 +240,17 @@ namespace NeoPixelMatrix {
     //% group="Input"
     export function readJoystick(): number {
         if (pins.digitalReadPin(pinCenterButton) == 0) {
-            return JoystickDirection.Center;
+            return eJoystickDirection.Center;
         } else if (pins.digitalReadPin(pinUpButton) == 0) {
-            return JoystickDirection.Up;
+            return eJoystickDirection.Up;
         } else if (pins.digitalReadPin(pinDownButton) == 0) {
-            return JoystickDirection.Down;
+            return eJoystickDirection.Down;
         } else if (pins.digitalReadPin(pinRightButton) == 0) {
-            return JoystickDirection.Right;
+            return eJoystickDirection.Right;
         } else if (pins.digitalReadPin(pinLeftButton) == 0) {
-            return JoystickDirection.Left;
+            return eJoystickDirection.Left;
         } else {
-            return JoystickDirection.NotPressed;
+            return eJoystickDirection.NotPressed;
         }
     }
 
@@ -506,7 +278,7 @@ namespace NeoPixelMatrix {
     //% group="Input"
     export function joystickChangedThread(callback: () => void): void {
         control.inBackground(() => {
-            let currentJoystickDirection: JoystickDirection = 0;
+            let currentJoystickDirection: eJoystickDirection = 0;
             while (true) {
                 currentJoystickDirection = readJoystick();
                 if (lastJoystickDirection !== currentJoystickDirection) {
@@ -521,33 +293,15 @@ namespace NeoPixelMatrix {
 
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
     /* TODO #BUG when using multiple joystickDirectionThread blocks and the callback function do not finish before executing the other joystickDirectionThread block, microbit crashes. */
-    //% block="when joystick direction: %joydirection"
-    //% joydirection.defl=JoystickDirection.Center
-    //% directionNumber.shadow="text"
+    //% block="when joystick direction: %direction"
+    //% direction.defl=eJoystickDirection.Center
     //% group="Input"
-    export function joystickDirectionThread(direction: JoystickDirection, callback: () => void): void { //TODO: Check function and remove commented code
-        // let direction: JoystickDirection;
-        // if (directionString === "notPressed") {
-        //     direction = JoystickDirection.NotPressed;
-        // } else if (directionString === "center") {
-        //     direction = JoystickDirection.Center;
-        // } else if (directionString === "up") {
-        //     direction = JoystickDirection.Up;
-        // } else if (directionString === "down") {
-        //     direction = JoystickDirection.Down;
-        // } else if (directionString === "right") {
-        //     direction = JoystickDirection.Right;
-        // } else if (directionString === "left") {
-        //     direction = JoystickDirection.Left;
-        // } else {
-        //     direction = JoystickDirection.Center;
-        //     serialDebugMsg("joystickDirectionThread: Error directionString: " + directionString + " is not valid. Setting to Center");
-        // }
+    export function joystickDirectionThread(direction: eJoystickDirection, callback: () => void): void {
         serialDebugMsg("joystickDirectionThread: Selected trigger direction: " + direction);
         basic.pause(getRandomInt(1, 100)); // Wait 1 to 100ms to asynchron threads
         control.inBackground(() => {
-            let lastJoystickDirectionLocal: JoystickDirection = JoystickDirection.NotPressed; // Local state variable
-            let currentJoystickDirection: JoystickDirection = 0;
+            let lastJoystickDirectionLocal: eJoystickDirection = eJoystickDirection.NotPressed; // Local state variable
+            let currentJoystickDirection: eJoystickDirection = 0;
             while (true) {
                 currentJoystickDirection = readJoystick();
                 if (lastJoystickDirectionLocal !== currentJoystickDirection && direction === currentJoystickDirection) {
@@ -606,9 +360,9 @@ namespace NeoPixelMatrix {
     //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
     //% speed.defl=10 speed.min=1 speed.max=100
-    //% direction.defl=Direction.Right
+    //% direction.defl=eDirection.Right
     //% group="Pixels"
-    export function movingImage(image: Image, color: number, speed: number, direction: Direction): void {
+    export function movingImage(image: Image, color: number, speed: number, direction: eDirection): void {
         /* Due to a bug the block is always generated with speed of 0. In this case we set it to the slowest speed. */
         if (speed < 1) {
             speed = 1; // slowest speed
@@ -620,7 +374,7 @@ namespace NeoPixelMatrix {
         speed = linearizeInt(speed, 1, 100, 1, 1000) // Convert speed to ms
 
         try {
-            if (direction === Direction.Left) {
+            if (direction === eDirection.Left) {
                 for (let offset = -matrixWidth; offset <= matrixWidth; offset++) {
                     for (let x = 0; x < matrixWidth; x++) {
                         for (let y = 0; y < matrixHeight; y++) {
@@ -632,7 +386,7 @@ namespace NeoPixelMatrix {
                     strip.show();
                     basic.pause(speed);
                 }
-            } else if (direction === Direction.Right) {
+            } else if (direction === eDirection.Right) {
                 for (let offset = matrixWidth; offset >= -matrixWidth; offset--) {
                     for (let x = 0; x < matrixWidth; x++) {
                         for (let y = 0; y < matrixHeight; y++) {
@@ -1010,28 +764,28 @@ namespace NeoPixelMatrix {
         }
 
         public setTime(): void {
-            const joystickDirection: JoystickDirection = readJoystick();
+            const joystickDirection: eJoystickDirection = readJoystick();
             /* If the joystick is not pressed, do nothing */
-            if (joystickDirection == JoystickDirection.NotPressed) {
+            if (joystickDirection == eJoystickDirection.NotPressed) {
                 return;
             }
             const currentTimeSecondsLocal = getCurrentTime();
             const hours = Math.floor((currentTimeSecondsLocal / 3600) % 12);  // ensure hours are between 0 and 11 and are whole numbers
             const minutes = Math.floor((currentTimeSecondsLocal / 60) % 60);  // ensure minutes are between 0 and 59 and are whole numbers
             switch (joystickDirection) {
-                case JoystickDirection.Up:
+                case eJoystickDirection.Up:
                     /* Increase hours by 1 */
                     setCurrentTime((hours + 1) % 12, minutes, 0);
                     break;
-                case JoystickDirection.Down:
+                case eJoystickDirection.Down:
                     /* Decrease hours by 1 */
                     setCurrentTime((hours + 11) % 12, minutes, 0);
                     break;
-                case JoystickDirection.Right:
+                case eJoystickDirection.Right:
                     /* Increase minutes by 5 */
                     setCurrentTime(hours, (minutes + 5) % 60, 0);
                     break;
-                case JoystickDirection.Left:
+                case eJoystickDirection.Left:
                     /* Decrease minutes by 5 */
                     setCurrentTime(hours, (minutes + 55) % 60, 0);
                     break;
@@ -1210,7 +964,7 @@ namespace NeoPixelMatrix {
     class SnakeGame {
         private _matrix: any;
         private snake: number[][] = [[3, 3]]; // Initial position of the snake
-        private direction: JoystickDirection = JoystickDirection.Right;
+        private direction: eJoystickDirection = eJoystickDirection.Right;
         private food: number[] = [2, 2]; // Initial position of the food
         private gameInterval: number = 500; // Game update interval in milliseconds
         private isGameOver: boolean = false;
@@ -1262,16 +1016,16 @@ namespace NeoPixelMatrix {
         private updateSnake(): void {
             let head = this.snake[0].slice();
             switch (this.direction) {
-                case JoystickDirection.Up:
+                case eJoystickDirection.Up:
                     head[1]++;
                     break;
-                case JoystickDirection.Down:
+                case eJoystickDirection.Down:
                     head[1]--;
                     break;
-                case JoystickDirection.Left:
+                case eJoystickDirection.Left:
                     head[0]--;
                     break;
-                case JoystickDirection.Right:
+                case eJoystickDirection.Right:
                     head[0]++;
                     break;
             }
@@ -1321,7 +1075,7 @@ namespace NeoPixelMatrix {
                         `),
                     0xffff00,
                     10,
-                    Direction.Right
+                    eDirection.Right
                 )
             }
             control.reset();
@@ -1336,11 +1090,11 @@ namespace NeoPixelMatrix {
             this._matrix.show();
         }
 
-        private changeDirection(newDirection: JoystickDirection): void {
-            if ((this.direction === JoystickDirection.Up && newDirection !== JoystickDirection.Down) ||
-                (this.direction === JoystickDirection.Down && newDirection !== JoystickDirection.Up) ||
-                (this.direction === JoystickDirection.Left && newDirection !== JoystickDirection.Right) ||
-                (this.direction === JoystickDirection.Right && newDirection !== JoystickDirection.Left)) {
+        private changeDirection(newDirection: eJoystickDirection): void {
+            if ((this.direction === eJoystickDirection.Up && newDirection !== eJoystickDirection.Down) ||
+                (this.direction === eJoystickDirection.Down && newDirection !== eJoystickDirection.Up) ||
+                (this.direction === eJoystickDirection.Left && newDirection !== eJoystickDirection.Right) ||
+                (this.direction === eJoystickDirection.Right && newDirection !== eJoystickDirection.Left)) {
                 this.direction = newDirection;
             }
         }
@@ -1359,10 +1113,10 @@ namespace NeoPixelMatrix {
                 while (true) {
                     const joystickDirection = readJoystick();
                     switch (joystickDirection) {
-                        case JoystickDirection.Up:
-                        case JoystickDirection.Down:
-                        case JoystickDirection.Left:
-                        case JoystickDirection.Right:
+                        case eJoystickDirection.Up:
+                        case eJoystickDirection.Down:
+                        case eJoystickDirection.Left:
+                        case eJoystickDirection.Right:
                             this.changeDirection(joystickDirection);
                             break;
                     }
