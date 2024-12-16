@@ -9,13 +9,14 @@
         "main.blocks",
         "main.ts",
         "README.md",
-        "ines-led-matrix.ts"
+        "ines-led-matrix.ts",
+        "enums.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "targetVersions": {
-        "target": "7.0.40",
+        "target": "7.0.51",
         "targetId": "microbit"
     },
     "supportedTargets": [
