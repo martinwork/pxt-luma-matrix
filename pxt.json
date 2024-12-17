@@ -11,7 +11,9 @@
         "README.md",
         "ines-led-matrix.ts",
         "enums.ts",
-        "matrix-lut.ts"
+        "matrix-lut.ts",
+        "_locales/de/InES-LED-Matrix-strings.json",
+        "_locales/de/InES-LED-Matrix-jsdoc-strings.json"
     ],
     "testFiles": [
         "test.ts"
