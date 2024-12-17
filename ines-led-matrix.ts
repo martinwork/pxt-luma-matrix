@@ -191,11 +191,7 @@ namespace NeoPixelMatrix {
             } else {
                 serialDebugMsg("setPixel: Error pixel out of range");
             }
-        } catch {
-            serialDebugMsg("showImage: Error creating image matrix");
         }
-        strip.show();
-        im = <Image><any>'';
     }
 
     //% blockId="Matrix_SetPixelColor"
