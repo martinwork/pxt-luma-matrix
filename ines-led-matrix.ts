@@ -32,14 +32,14 @@ namespace NeoPixelMatrix {
     let currentBrightness = 100; // 0 to 255
     let pollingInterval = 10 // 10ms Interval for polling LED Matrix Interface. Adjust the polling interval as needed.
     let wordClockDisplayUpdateInterval = 60; // in seconds
-    let pinSlider: DigitalPin = DigitalPin.P1;
+    let pinSwitch: DigitalPin = DigitalPin.P1;
     let pinCenterButton: DigitalPin = DigitalPin.P2;
     let pinUpButton: DigitalPin = DigitalPin.P9;
     let pinDownButton: DigitalPin = DigitalPin.P16;
     let pinRightButton: DigitalPin = DigitalPin.P8;
     let pinLeftButton: DigitalPin = DigitalPin.P12;
     let counter = 0;
-    let lastSliderValue = readSlider(); // used for sliderValueChanged
+    let lastSwitchValue = readSwitch(); // used for switchValueChanged
     let lastJoystickDirection: eJoystickDirection = eJoystickDirection.NotPressed; // used for joystickDirectionChanged
     let result: number[][] = [];
     let binaryArray: number[] = [];
@@ -120,41 +120,41 @@ namespace NeoPixelMatrix {
     }
 
     function initializeMatrixInterface(): void {
-        pins.setPull(pinSlider, PinPullMode.PullUp);
+        pins.setPull(pinSwitch, PinPullMode.PullUp);
         pins.setPull(pinCenterButton, PinPullMode.PullUp);
         pins.setPull(pinUpButton, PinPullMode.PullUp);
         pins.setPull(pinDownButton, PinPullMode.PullUp);
         pins.setPull(pinRightButton, PinPullMode.PullUp);
         pins.setPull(pinLeftButton, PinPullMode.PullUp);
-        serialDebugMsg("initializeMatrixInterface: pinSlider: " + pinSlider + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
+        serialDebugMsg("initializeMatrixInterface: pinSwitch: " + pinSwitch + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
     }
 
     //% blockId="Matrix_InitExpert"
-    //% block="initialize LED Matrix Interface (Expert). \nSlider pin $pinSliderTemp \nCenter button pin $pinCenterButtonTemp \nUp button pin $pinUpButtonTemp \nDown button pin $pinDownButtonTemp \nRight button pin $pinRightButtonTemp \nLeft button pin $pinLeftButtonTemp"
+    //% block="initialize LED Matrix Interface (Expert). \nSwitch pin $pinSwitchTemp \nCenter button pin $pinCenterButtonTemp \nUp button pin $pinUpButtonTemp \nDown button pin $pinDownButtonTemp \nRight button pin $pinRightButtonTemp \nLeft button pin $pinLeftButtonTemp"
     //% advanced=true
     export function initializeMatrixInterfaceExpert(
-        pinSliderTemp: DigitalPin,
+        pinSwitchTemp: DigitalPin,
         pinCenterButtonTemp: DigitalPin,
         pinUpButtonTemp: DigitalPin,
         pinDownButtonTemp: DigitalPin,
         pinRightButtonTemp: DigitalPin,
         pinLeftButtonTemp: DigitalPin
     ): void {
-        pinSlider = pinSliderTemp;
+        pinSwitch = pinSwitchTemp;
         pinCenterButton = pinCenterButtonTemp;
         pinUpButton = pinUpButtonTemp;
         pinDownButton = pinDownButtonTemp;
         pinRightButton = pinRightButtonTemp;
         pinLeftButton = pinLeftButtonTemp;
 
-        pins.setPull(pinSlider, PinPullMode.PullUp);
+        pins.setPull(pinSwitch, PinPullMode.PullUp);
         pins.setPull(pinCenterButton, PinPullMode.PullUp);
         pins.setPull(pinUpButton, PinPullMode.PullUp);
         pins.setPull(pinDownButton, PinPullMode.PullUp);
         pins.setPull(pinRightButton, PinPullMode.PullUp);
         pins.setPull(pinLeftButton, PinPullMode.PullUp);
         basic.pause(5); // Wait 5ms for pull-up to take effect
-        serialDebugMsg("initializeMatrixInterface: pinSlider: " + pinSlider + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
+        serialDebugMsg("initializeMatrixInterface: pinSwitch: " + pinSwitch + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
     }
 
     //% blockId="Matrix_Clear"
@@ -230,24 +230,31 @@ namespace NeoPixelMatrix {
         return value;
     }
 
-    //% blockId="Input_SliderRead"
-    //% block="read slider value"
+    //% blockId="Input_SwitchRead"
+    //% block="read switch value"
     //% group="Input"
-    export function readSlider(): number {
-        return pins.digitalReadPin(pinSlider);
+    export function readSwitch(): number {
+        return pins.digitalReadPin(pinSwitch);
     }
 
-    /* Creates thread to poll slider value and execute callback when value changes. */
-    //% blockId="Input_SliderCallback"
-    //% block="when slider value changed"
+    //% blockId="Input_SwitchReadBool"
+    //% block="Switch is set"
     //% group="Input"
-    export function sliderValueChangedThread(callback: () => void): void {
+    export function isSwitchSet(): boolean {
+        return (pins.digitalReadPin(pinSwitch) != 0);
+    }
+
+    /* Creates thread to poll switch value and execute callback when value changes. */
+    //% blockId="Input_SwitchCallback"
+    //% block="when switch value changed"
+    //% group="Input"
+    export function switchValueChangedThread(callback: () => void): void {
         control.inBackground(() => {
-            let currentSliderValue = 0;
+            let currentSwitchValue = 0;
             while (true) {
-                currentSliderValue = pins.digitalReadPin(pinSlider);
-                if (currentSliderValue !== lastSliderValue) {
-                    lastSliderValue = currentSliderValue;
+                currentSwitchValue = pins.digitalReadPin(pinSwitch);
+                if (currentSwitchValue !== lastSwitchValue) {
+                    lastSwitchValue = currentSwitchValue;
                     callback();
                 }
                 basic.pause(pollingInterval);
@@ -293,6 +300,14 @@ namespace NeoPixelMatrix {
         }
     }
 
+    //% blockId="Input_JoystickCompare"
+    //% block="$joystick == $direction"
+    //% joystick.shadow="Input_JoystickRead"
+    //% direction.defl=eJoystickDirection.Center
+    //% group="Input"
+    export function compareJoystick(joystick: number, direction: eJoystickDirection): boolean {
+        return joystick === direction;
+    }
 
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
     //% block="Input_JoystickCallback"
@@ -615,7 +630,7 @@ namespace NeoPixelMatrix {
         return `${hours}:${minutes}:${seconds}`; // return the time as a string
     }
 
-    /* TODO Bug in block no slider for setting time, only works with variables. */
+    /* TODO Bug in block no switch for setting time, only works with variables. */
     //% blockId="Clock_TimeSet"
     //% block="set current time to $hours:$minutes:$seconds"
     //% hours.min=0 hours.max=23
@@ -923,26 +938,26 @@ namespace NeoPixelMatrix {
         setBrightness(oldBrightness);
         serialDebugMsg("testLedMatrix: Finished testing LED matrix pixels");
 
-        /* Test Slider */
+        /* Test Switch */
         basic.showString("MOVE SLIDER");
         // scrollText("MOVE SLIDER", neopixel.colors(NeoPixelColors.White), 90);
-        serialDebugMsg("testLedMatrix: Start testing LED matrix slider");
+        serialDebugMsg("testLedMatrix: Start testing LED matrix switch");
         /* Set the first pixel to blue during the test. */
         setPixel(0, 0, colorBlue);
         strip.show();
-        while (0 !== readSlider()) {
+        while (0 !== readSwitch()) {
             basic.pause(pollingInterval);
         }
-        while (1 !== readSlider()) {
+        while (1 !== readSwitch()) {
             basic.pause(pollingInterval);
         }
-        while (0 !== readSlider()) {
+        while (0 !== readSwitch()) {
             basic.pause(pollingInterval);
         }
         /* Set the first pixel to green when the test passed. */
         setPixel(0, 0, colorGreen);
         strip.show();
-        serialDebugMsg("testLedMatrix: Slider Works");
+        serialDebugMsg("testLedMatrix: Switch Works");
         // basic.showString("SLIDER OK");
         // scrollText("SLIDER OK", neopixel.colors(NeoPixelColors.White), 90);
 

@@ -15,9 +15,9 @@
  * ------------------------------------------------------------------
  */
 
-NeoPixelMatrix.sliderValueChangedThread(function () {
-    basic.showNumber(NeoPixelMatrix.readSlider())
-    serial.writeValue("slider", NeoPixelMatrix.readSlider())
+NeoPixelMatrix.switchValueChangedThread(function () {
+    basic.showNumber(NeoPixelMatrix.readSwitch())
+    serial.writeValue("switch", NeoPixelMatrix.readSwitch())
     NeoPixelMatrix.setCurrentTime(h, m, s)
 })
 let s = 0
