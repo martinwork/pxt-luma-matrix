@@ -7,34 +7,39 @@
  * -- |_____|_| |_|______|_____/   8401 Winterthur, Switzerland     -
  * ------------------------------------------------------------------
  * --
- * -- File:	    test.ts
+ * -- File:	    enums.ts
  * -- Project:  micro:bit InES Matrix
  * -- Date:	    16.12.2024
- * -- Author:   hesu
+ * -- Author:   ebep
  * --
  * ------------------------------------------------------------------
  */
 
-NeoPixelMatrix.switchValueChangedThread(function () {
-    basic.showNumber(NeoPixelMatrix.readSwitch())
-    serial.writeValue("switch", NeoPixelMatrix.readSwitch())
-    NeoPixelMatrix.setCurrentTime(h, m, s)
-})
-let s = 0
-let m = 0
-let h = 0
-NeoPixelMatrix.debugEnable(true)
-NeoPixelMatrix.initializeMatrix(DigitalPin.P0, 135)
-NeoPixelMatrix.createWordClock(
-eMatrixVersion.V1,
-0x00ff00,
-0x007fff,
-0xff0000
-)
-h = 0
-m = 22
-s = 55
-while (true) {
-    basic.pause(5000)
-    serial.writeLine(NeoPixelMatrix.getCurrentTimeAsText())
+enum eMatrixVersion {
+    //% block="V1"
+    V1 = 1,
+    //% block="V2"
+    V2 = 2,
+}
+
+enum eJoystickDirection {
+    //% block="notPressed"
+    NotPressed = 0,
+    //% block="center"
+    Center = 1,
+    //% block="up"
+    Up = 2,
+    //% block="down"
+    Down = 3,
+    //% block="right"
+    Right = 4,
+    //% block="left"
+    Left = 5
+}
+
+enum eDirection {
+    //% block="right"
+    Right = 0,
+    //% block="left"
+    Left = 1
 }

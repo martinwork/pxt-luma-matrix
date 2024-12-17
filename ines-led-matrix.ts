@@ -1,28 +1,23 @@
-// a creation by ZHAW, 2024
-// edited by vore and hesu
-namespace NeoPixelMatrix {
-    /* ENUMS */
-    enum Direction {
-        //% block="right"
-        Right = 0,
-        //% block="left"
-        Left = 1
-    }
+/* ------------------------------------------------------------------
+ * --  _____       ______  _____                                    -
+ * -- |_   _|     |  ____|/ ____|                                   -
+ * --   | |  _ __ | |__  | (___    Institute of Embedded Systems    -
+ * --   | | | '_ \|  __|  \___ \   Zurich University of             -
+ * --  _| |_| | | | |____ ____) |  Applied Sciences                 -
+ * -- |_____|_| |_|______|_____/   8401 Winterthur, Switzerland     -
+ * ------------------------------------------------------------------
+ * --
+ * -- File:	    ines-led-matrix.ts
+ * -- Project:  micro:bit InES Matrix
+ * -- Date:	    16.12.2024
+ * -- Author:   vore, hesu, ebep
+ * --
+ * ------------------------------------------------------------------
+ */
 
-    enum JoystickDirection {
-        //% block="notPressed"
-        NotPressed = 0,
-        //% block="center"
-        Center = 1,
-        //% block="up"
-        Up = 2,
-        //% block="down"
-        Down = 3,
-        //% block="right"
-        Right = 4,
-        //% block="left"
-        Left = 5
-    }
+
+//% color=#3162a3 icon="\uf00a" block="InES Matrix"
+namespace NeoPixelMatrix {
 
     /* GLOBAL VARIABLES */
     const startTime = control.millis();
@@ -37,15 +32,15 @@ namespace NeoPixelMatrix {
     let currentBrightness = 100; // 0 to 255
     let pollingInterval = 10 // 10ms Interval for polling LED Matrix Interface. Adjust the polling interval as needed.
     let wordClockDisplayUpdateInterval = 60; // in seconds
-    let pinSlider: DigitalPin = DigitalPin.P1;
+    let pinSwitch: DigitalPin = DigitalPin.P1;
     let pinCenterButton: DigitalPin = DigitalPin.P2;
     let pinUpButton: DigitalPin = DigitalPin.P9;
     let pinDownButton: DigitalPin = DigitalPin.P16;
     let pinRightButton: DigitalPin = DigitalPin.P8;
     let pinLeftButton: DigitalPin = DigitalPin.P12;
     let counter = 0;
-    let lastSliderValue = readSlider(); // used for sliderValueChanged
-    let lastJoystickDirection: JoystickDirection = JoystickDirection.NotPressed; // used for joystickDirectionChanged
+    let lastSwitchValue = readSwitch(); // used for switchValueChanged
+    let lastJoystickDirection: eJoystickDirection = eJoystickDirection.NotPressed; // used for joystickDirectionChanged
     let result: number[][] = [];
     let binaryArray: number[] = [];
     let finalResult: number[][] = [];
@@ -58,226 +53,6 @@ namespace NeoPixelMatrix {
     let index: number = 0;
     let debugEnabled: boolean = false;
 
-    /* Simple 8x8 font */
-    /* TODO: Text Font need to be reworked. */
-    let textFont: { [char: string]: number[] } = {
-        /* Uppercase letters map */
-        'A': [0b00000000, 0b00011000, 0b00100100, 0b01000010, 0b01111110, 0b01000010, 0b01000010, 0b00000000],
-        'B': [0b00000000, 0b01111000, 0b01000100, 0b01111000, 0b01000100, 0b01000100, 0b01111000, 0b00000000],
-        'C': [0b00000000, 0b00111100, 0b01000010, 0b01000000, 0b01000000, 0b01000010, 0b00111100, 0b00000000],
-        'D': [0b00000000, 0b01111000, 0b01000100, 0b01000010, 0b01000010, 0b01000100, 0b01111000, 0b00000000],
-        'E': [0b00000000, 0b01111110, 0b01000000, 0b01111000, 0b01000000, 0b01000000, 0b01111110, 0b00000000],
-        'F': [0b00000000, 0b01111110, 0b01000000, 0b01111000, 0b01000000, 0b01000000, 0b01000000, 0b00000000],
-        'G': [0b00000000, 0b00111100, 0b01000010, 0b01000000, 0b01001110, 0b01000010, 0b00111100, 0b00000000],
-        'H': [0b00000000, 0b01000010, 0b01000010, 0b01111110, 0b01000010, 0b01000010, 0b01000010, 0b00000000],
-        'I': [0b00000000, 0b00111100, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00111100, 0b00000000],
-        'J': [0b00000000, 0b00011110, 0b00000100, 0b00000100, 0b00000100, 0b01000100, 0b00111000, 0b00000000],
-        'K': [0b00000000, 0b01000010, 0b01000100, 0b01001000, 0b01110000, 0b01001000, 0b01000100, 0b00000000],
-        'L': [0b00000000, 0b01000000, 0b01000000, 0b01000000, 0b01000000, 0b01000000, 0b01111110, 0b00000000],
-        'M': [0b00000000, 0b01000010, 0b01100110, 0b01011010, 0b01000010, 0b01000010, 0b01000010, 0b00000000],
-        'N': [0b00000000, 0b01000010, 0b01100010, 0b01010010, 0b01001010, 0b01000110, 0b01000010, 0b00000000],
-        'O': [0b00000000, 0b00111100, 0b01000010, 0b01000010, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        'P': [0b00000000, 0b01111000, 0b01000100, 0b01000100, 0b01111000, 0b01000000, 0b01000000, 0b00000000],
-        'Q': [0b00000000, 0b00111100, 0b01000010, 0b01000010, 0b01001010, 0b01000100, 0b00111010, 0b00000000],
-        'R': [0b00000000, 0b01111000, 0b01000100, 0b01000100, 0b01111000, 0b01001000, 0b01000100, 0b00000000],
-        'S': [0b00000000, 0b00111100, 0b01000010, 0b00110000, 0b00001100, 0b01000010, 0b00111100, 0b00000000],
-        'T': [0b00000000, 0b01111110, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00000000],
-        'U': [0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        'V': [0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b00100100, 0b00100100, 0b00011000, 0b00000000],
-        'W': [0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b01011010, 0b01100110, 0b01000010, 0b00000000],
-        'X': [0b00000000, 0b01000010, 0b00100100, 0b00011000, 0b00011000, 0b00100100, 0b01000010, 0b00000000],
-        'Y': [0b00000000, 0b01000010, 0b00100100, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00000000],
-        'Z': [0b00000000, 0b01111110, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b01111110, 0b00000000],
-        ' ': [0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000],
-        /* Lowercase letters map */
-        'a': [0b00000000, 0b00000000, 0b00111100, 0b00000010, 0b00111110, 0b01000010, 0b00111110, 0b00000000],
-        'b': [0b00000000, 0b01000000, 0b01000000, 0b01111100, 0b01000010, 0b01000010, 0b01111100, 0b00000000],
-        'c': [0b00000000, 0b00000000, 0b00111100, 0b01000000, 0b01000000, 0b01000010, 0b00111100, 0b00000000],
-        'd': [0b00000000, 0b00000010, 0b00000010, 0b00111110, 0b01000010, 0b01000010, 0b00111110, 0b00000000],
-        'e': [0b00000000, 0b00000000, 0b00111100, 0b01000010, 0b01111110, 0b01000000, 0b00111100, 0b00000000],
-        'f': [0b00000000, 0b00001100, 0b00010010, 0b00010000, 0b01111100, 0b00010000, 0b00010000, 0b00000000],
-        'g': [0b00000000, 0b00000000, 0b00111110, 0b01000010, 0b00111110, 0b00000010, 0b01111100, 0b00000000],
-        'h': [0b00000000, 0b01000000, 0b01000000, 0b01111100, 0b01000010, 0b01000010, 0b01000010, 0b00000000],
-        'i': [0b00000000, 0b00000000, 0b00011000, 0b00000000, 0b00111000, 0b00001000, 0b00111100, 0b00000000],
-        'j': [0b00000000, 0b00000000, 0b00001100, 0b00000000, 0b00011100, 0b00000100, 0b00111100, 0b00000000],
-        'k': [0b00000000, 0b01000000, 0b01000010, 0b01000100, 0b01111000, 0b01000100, 0b01000010, 0b00000000],
-        'l': [0b00000000, 0b00110000, 0b00001000, 0b00001000, 0b00001000, 0b00001000, 0b00111100, 0b00000000],
-        'm': [0b00000000, 0b00000000, 0b01100100, 0b01011010, 0b01000010, 0b01000010, 0b01000010, 0b00000000],
-        'n': [0b00000000, 0b00000000, 0b01111000, 0b01000100, 0b01000100, 0b01000100, 0b01000100, 0b00000000],
-        'o': [0b00000000, 0b00000000, 0b00111100, 0b01000010, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        'p': [0b00000000, 0b00000000, 0b01111100, 0b01000010, 0b01111100, 0b01000000, 0b01000000, 0b00000000],
-        'q': [0b00000000, 0b00000000, 0b00111110, 0b01000010, 0b00111110, 0b00000010, 0b00000010, 0b00000000],
-        'r': [0b00000000, 0b00000000, 0b01011100, 0b01100010, 0b01000000, 0b01000000, 0b01000000, 0b00000000],
-        's': [0b00000000, 0b00000000, 0b00111110, 0b01000000, 0b00111100, 0b00000010, 0b01111100, 0b00000000],
-        't': [0b00000000, 0b00000000, 0b00010000, 0b01111100, 0b00010000, 0b00010010, 0b00001100, 0b00000000],
-        'u': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b01000110, 0b00111010, 0b00000000],
-        'v': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b00100100, 0b00100100, 0b00011000, 0b00000000],
-        'w': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b01011010, 0b01100110, 0b01000010, 0b00000000],
-        'x': [0b00000000, 0b00000000, 0b01000010, 0b00100100, 0b00011000, 0b00100100, 0b01000010, 0b00000000],
-        'y': [0b00000000, 0b00000000, 0b01000010, 0b01000010, 0b00111110, 0b00000010, 0b00111100, 0b00000000],
-        'z': [0b00000000, 0b00000000, 0b01111110, 0b00000100, 0b00001000, 0b00100000, 0b01111110, 0b00000000],
-        /* Number map */
-        '0': [0b00000000, 0b00111100, 0b01000010, 0b01000110, 0b01001010, 0b01010010, 0b00111100, 0b00000000],
-        '1': [0b00000000, 0b00011000, 0b00101000, 0b00001000, 0b00001000, 0b00001000, 0b01111110, 0b00000000],
-        '2': [0b00000000, 0b00111100, 0b01000010, 0b00000010, 0b00011100, 0b00100000, 0b01111110, 0b00000000],
-        '3': [0b00000000, 0b00111100, 0b01000010, 0b00001100, 0b00000010, 0b01000010, 0b00111100, 0b00000000],
-        '4': [0b00000000, 0b00000100, 0b00001100, 0b00010100, 0b00100100, 0b01111110, 0b00000100, 0b00000000],
-        '5': [0b00000000, 0b01111110, 0b01000000, 0b01111100, 0b00000010, 0b01000010, 0b00111100, 0b00000000],
-        '6': [0b00000000, 0b00111100, 0b01000000, 0b01111100, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        '7': [0b00000000, 0b01111110, 0b00000010, 0b00000100, 0b00001000, 0b00010000, 0b00100000, 0b00000000],
-        '8': [0b00000000, 0b00111100, 0b01000010, 0b00111100, 0b01000010, 0b01000010, 0b00111100, 0b00000000],
-        '9': [0b00000000, 0b00111100, 0b01000010, 0b00111110, 0b00000010, 0b01000010, 0b00111100, 0b00000000],
-        /* Symbols map */
-        '(': [0b00000000, 0b00001100, 0b00010000, 0b00100000, 0b00100000, 0b00010000, 0b00001100, 0b00000000],
-        ')': [0b00000000, 0b00110000, 0b00001000, 0b00000100, 0b00000100, 0b00001000, 0b00110000, 0b00000000],
-        ':': [0b00000000, 0b00000000, 0b00011000, 0b00011000, 0b00000000, 0b00011000, 0b00011000, 0b00000000],
-        ';': [0b00000000, 0b00000000, 0b00011000, 0b00011000, 0b00000000, 0b00011000, 0b00001000, 0b00010000],
-        '.': [0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00011000, 0b00011000, 0b00000000],
-        ',': [0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00011000, 0b00001000, 0b00010000],
-        '!': [0b00000000, 0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00000000, 0b00011000, 0b00000000],
-        '?': [0b00000000, 0b00111100, 0b01000010, 0b00000100, 0b00001000, 0b00000000, 0b00001000, 0b00000000],
-    };
-
-    /* WORD CLOCK */
-    let wordClockMappings: { [key: string]: number[][] } = {
-        'ONE': [
-            [1, 7],
-            [4, 7],
-            [7, 7]
-        ],
-        'TWO': [
-            [0, 6],
-            [1, 6],
-            [1, 7]
-        ],
-        'THREE': [
-            [3, 5],
-            [4, 5],
-            [5, 5],
-            [6, 5],
-            [7, 5]
-        ],
-        'FOUR': [
-            [0, 7],
-            [1, 7],
-            [2, 7],
-            [3, 7]
-        ],
-        'HOUR_FIVE': [
-            [0, 4],
-            [1, 4],
-            [2, 4],
-            [3, 4]
-        ],
-        'MIN_FIVE': [
-            [4, 2],
-            [5, 2],
-            [6, 2],
-            [7, 2]
-        ],
-        'SIX': [
-            [0, 5],
-            [1, 5],
-            [2, 5]
-        ],
-        'SEVEN': [
-            [0, 5],
-            [4, 6],
-            [5, 6],
-            [6, 6],
-            [7, 6]
-        ],
-        'EIGHT': [
-            [3, 4],
-            [4, 4],
-            [5, 4],
-            [6, 4],
-            [7, 4]
-        ],
-        'NINE': [
-            [4, 7],
-            [5, 7],
-            [6, 7],
-            [7, 7]
-        ],
-        'HOUR_TEN': [
-            [7, 4],
-            [7, 5],
-            [7, 6]
-        ],
-        'MIN_TEN': [
-            [2, 0],
-            [4, 0],
-            [5, 0]
-        ],
-        'ELEVEN': [
-            [2, 6],
-            [3, 6],
-            [4, 6],
-            [5, 6],
-            [6, 6],
-            [7, 6]
-        ],
-        'TWELVE': [
-            [0, 6],
-            [1, 6],
-            [2, 6],
-            [3, 6],
-            [5, 6],
-            [6, 6]
-        ],
-        'QUARTER': [
-            [1, 1],
-            [2, 1],
-            [3, 1],
-            [4, 1],
-            [5, 1],
-            [6, 1],
-            [7, 1]
-        ],
-        'TWENTY': [
-            [2, 0],
-            [3, 0],
-            [4, 0],
-            [5, 0],
-            [6, 0],
-            [7, 0]
-        ],
-        'TWENTY_FIVE': [ // currently not used
-            [2, 0],
-            [3, 0],
-            [4, 0],
-            [5, 0],
-            [6, 0],
-            [7, 0],
-            [4, 2],
-            [5, 2]
-            // [6, 2], // Not enough memory to display this word
-            // [7, 2]
-        ],
-        'HALF': [
-            [1, 2],
-            [2, 2],
-            [3, 2],
-            [4, 2]
-        ],
-        'PAST': [
-            [2, 3],
-            [3, 3],
-            [4, 3],
-            [5, 3]
-        ],
-        'TO': [
-            [5, 3],
-            [6, 3]
-        ],
-        'ZHAW': [
-            [0, 0],
-            [0, 1],
-            [0, 2],
-            [0, 3]
-        ]
-    };
 
     /* FUNCTIONS */
 
@@ -296,8 +71,10 @@ namespace NeoPixelMatrix {
         return result;
     }
 
+    //% blockId="Debug_Enable"
     //% block="set serial debugging prints to $enable"
     //% enable.shadow="toggleOnOff"
+    //% advanced=true
     export function debugEnable(enable: boolean): void {
         debugEnabled = enable;
     }
@@ -321,8 +98,10 @@ namespace NeoPixelMatrix {
         return lowerOutputRangeLimit + factor * (upperOutputRangeLimit - lowerOutputRangeLimit);
     }
 
+    //% blockId="Matrix_Init"
     //% block="initialize NeoPixel matrix with pin $pin and brightness $brightness"
-    //% brightness.min=0 brightness.max=255
+    //% brightness.defl=127 brightness.min=0 brightness.max=255
+    //% group="Pixels" weight=120
     export function initializeMatrix(pin: DigitalPin = DigitalPin.P0, brightness: number): void {
         serial.setBaudRate(BaudRate.BaudRate115200)
         serial.redirectToUSB();
@@ -341,42 +120,46 @@ namespace NeoPixelMatrix {
     }
 
     function initializeMatrixInterface(): void {
-        pins.setPull(pinSlider, PinPullMode.PullUp);
+        pins.setPull(pinSwitch, PinPullMode.PullUp);
         pins.setPull(pinCenterButton, PinPullMode.PullUp);
         pins.setPull(pinUpButton, PinPullMode.PullUp);
         pins.setPull(pinDownButton, PinPullMode.PullUp);
         pins.setPull(pinRightButton, PinPullMode.PullUp);
         pins.setPull(pinLeftButton, PinPullMode.PullUp);
-        serialDebugMsg("initializeMatrixInterface: pinSlider: " + pinSlider + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
+        serialDebugMsg("initializeMatrixInterface: pinSwitch: " + pinSwitch + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
     }
 
-    //% block="initialize LED Matrix Interface (Expert). \nSlider pin $pinSliderTemp \nCenter button pin $pinCenterButtonTemp \nUp button pin $pinUpButtonTemp \nDown button pin $pinDownButtonTemp \nRight button pin $pinRightButtonTemp \nLeft button pin $pinLeftButtonTemp"
+    //% blockId="Matrix_InitExpert"
+    //% block="initialize LED Matrix Interface (Expert). \nSwitch pin $pinSwitchTemp \nCenter button pin $pinCenterButtonTemp \nUp button pin $pinUpButtonTemp \nDown button pin $pinDownButtonTemp \nRight button pin $pinRightButtonTemp \nLeft button pin $pinLeftButtonTemp"
+    //% advanced=true
     export function initializeMatrixInterfaceExpert(
-        pinSliderTemp: DigitalPin,
+        pinSwitchTemp: DigitalPin,
         pinCenterButtonTemp: DigitalPin,
         pinUpButtonTemp: DigitalPin,
         pinDownButtonTemp: DigitalPin,
         pinRightButtonTemp: DigitalPin,
         pinLeftButtonTemp: DigitalPin
     ): void {
-        pinSlider = pinSliderTemp;
+        pinSwitch = pinSwitchTemp;
         pinCenterButton = pinCenterButtonTemp;
         pinUpButton = pinUpButtonTemp;
         pinDownButton = pinDownButtonTemp;
         pinRightButton = pinRightButtonTemp;
         pinLeftButton = pinLeftButtonTemp;
 
-        pins.setPull(pinSlider, PinPullMode.PullUp);
+        pins.setPull(pinSwitch, PinPullMode.PullUp);
         pins.setPull(pinCenterButton, PinPullMode.PullUp);
         pins.setPull(pinUpButton, PinPullMode.PullUp);
         pins.setPull(pinDownButton, PinPullMode.PullUp);
         pins.setPull(pinRightButton, PinPullMode.PullUp);
         pins.setPull(pinLeftButton, PinPullMode.PullUp);
         basic.pause(5); // Wait 5ms for pull-up to take effect
-        serialDebugMsg("initializeMatrixInterface: pinSlider: " + pinSlider + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
+        serialDebugMsg("initializeMatrixInterface: pinSwitch: " + pinSwitch + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
     }
 
+    //% blockId="Matrix_Clear"
     //% block="clear NeoPixel matrix"
+    //% group="Pixels" weight=110
     export function clear(): void {
         if (strip) {
             strip.clear();
@@ -384,7 +167,10 @@ namespace NeoPixelMatrix {
         }
     }
 
+    //% blockId="Matrix_Brightness"
     //% block="set Brightness $brightness"
+    //% brightness.defl=127 brightness.min=0 brightness.max=255
+    //% group="Pixels" weight=109
     export function setBrightness(brightness: number): void {
         currentBrightness = brightness;
         strip.setBrightness(brightness);
@@ -408,18 +194,23 @@ namespace NeoPixelMatrix {
         }
     }
 
+    //% blockId="Matrix_SetPixelColor"
     //% block="set one pixel at x $x y $y to color $color"
     //% x.min=0 x.max=7 y.min=0 y.max=7
     //% color.shadow="colorNumberPicker"
+    //% group="Pixels" weight=108
     export function setOnePixel(x: number, y: number, color: number): void {
         setPixel(x, y, color);
         strip.show();
         serialDebugMsg("setOnePixel: Pixel: " + x + "," + y + " is set to color: " + color);
     }
 
-    //% block="set one pixel at x:$x y:$y to RGB colors R:$R G:$G B:$B"
+    //% blockId="Matrix_SetPixelRGB"
+    //% block="set one pixel at | x: $x y: $y to RGB colors | R: $R G: $G B: $B"
     //% x.min=0 x.max=7 y.min=0 y.max=7
     //% R.min=0 R.max=255 G.min=0 G.max=255 B.min=0 B.max=255
+    //% group="Pixels" weight=107
+    //% blockExternalInputs=true
     export function setOnePixelRGB(x: number, y: number, R: number, G: number, B: number): void {
         R = Math.max(0, Math.min(255, R));
         G = Math.max(0, Math.min(255, G));
@@ -430,27 +221,40 @@ namespace NeoPixelMatrix {
         serialDebugMsg("setOnePixel: Pixel: " + x + "," + y + " is set to color(R,G,B): (" + R + "," + G + "," + B + ")");
     }
 
+    //% blockId="Input_GPIORead"
     //% block="read GPIO $pin"
+    //% group="Input"
     export function readGPIO(pin: DigitalPin): number { // Function not really needed, just for debugging
         let value = pins.analogReadPin(pin);
         serialDebugMsg("readGPIO: GPIO: " + pin + " Value: " + value);
         return value;
     }
 
-    //% block="read slider value"
-    export function readSlider(): number {
-        return pins.digitalReadPin(pinSlider);
+    //% blockId="Input_SwitchRead"
+    //% block="read switch value"
+    //% group="Input"
+    export function readSwitch(): number {
+        return pins.digitalReadPin(pinSwitch);
     }
 
-    /* Creates thread to poll slider value and execute callback when value changes. */
-    //% block="when slider value changed"
-    export function sliderValueChangedThread(callback: () => void): void {
+    //% blockId="Input_SwitchReadBool"
+    //% block="Switch is set"
+    //% group="Input"
+    export function isSwitchSet(): boolean {
+        return (pins.digitalReadPin(pinSwitch) != 0);
+    }
+
+    /* Creates thread to poll switch value and execute callback when value changes. */
+    //% blockId="Input_SwitchCallback"
+    //% block="when switch value changed"
+    //% group="Input"
+    export function switchValueChangedThread(callback: () => void): void {
         control.inBackground(() => {
-            let currentSliderValue = 0;
+            let currentSwitchValue = 0;
             while (true) {
-                currentSliderValue = pins.digitalReadPin(pinSlider);
-                if (currentSliderValue !== lastSliderValue) {
-                    lastSliderValue = currentSliderValue;
+                currentSwitchValue = pins.digitalReadPin(pinSwitch);
+                if (currentSwitchValue !== lastSwitchValue) {
+                    lastSwitchValue = currentSwitchValue;
                     callback();
                 }
                 basic.pause(pollingInterval);
@@ -458,24 +262,28 @@ namespace NeoPixelMatrix {
         });
     }
 
+    //% blockId="Input_JoystickRead"
     //% block="read joystick direction"
+    //% group="Input"
     export function readJoystick(): number {
         if (pins.digitalReadPin(pinCenterButton) == 0) {
-            return JoystickDirection.Center;
+            return eJoystickDirection.Center;
         } else if (pins.digitalReadPin(pinUpButton) == 0) {
-            return JoystickDirection.Up;
+            return eJoystickDirection.Up;
         } else if (pins.digitalReadPin(pinDownButton) == 0) {
-            return JoystickDirection.Down;
+            return eJoystickDirection.Down;
         } else if (pins.digitalReadPin(pinRightButton) == 0) {
-            return JoystickDirection.Right;
+            return eJoystickDirection.Right;
         } else if (pins.digitalReadPin(pinLeftButton) == 0) {
-            return JoystickDirection.Left;
+            return eJoystickDirection.Left;
         } else {
-            return JoystickDirection.NotPressed;
+            return eJoystickDirection.NotPressed;
         }
     }
 
+    //% blockId="Input_JoystickReadStr"
     //% block="read joystick direction as text"
+    //% group="Input"
     export function readJoystickText(): string {
         if (pins.digitalReadPin(pinCenterButton) == 0) {
             return "Center\n";
@@ -492,12 +300,22 @@ namespace NeoPixelMatrix {
         }
     }
 
+    //% blockId="Input_JoystickCompare"
+    //% block="$joystick == $direction"
+    //% joystick.shadow="Input_JoystickRead"
+    //% direction.defl=eJoystickDirection.Center
+    //% group="Input"
+    export function compareJoystick(joystick: number, direction: eJoystickDirection): boolean {
+        return joystick === direction;
+    }
 
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
+    //% block="Input_JoystickCallback"
     //% block="when joystick changed"
+    //% group="Input"
     export function joystickChangedThread(callback: () => void): void {
         control.inBackground(() => {
-            let currentJoystickDirection: JoystickDirection = 0;
+            let currentJoystickDirection: eJoystickDirection = 0;
             while (true) {
                 currentJoystickDirection = readJoystick();
                 if (lastJoystickDirection !== currentJoystickDirection) {
@@ -512,31 +330,16 @@ namespace NeoPixelMatrix {
 
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
     /* TODO #BUG when using multiple joystickDirectionThread blocks and the callback function do not finish before executing the other joystickDirectionThread block, microbit crashes. */
-    //% block="when joystick direction: $directionString"
-    //% directionNumber.shadow="text"
-    export function joystickDirectionThread(directionString: string, callback: () => void): void {
-        let direction: JoystickDirection;
-        if (directionString === "notPressed") {
-            direction = JoystickDirection.NotPressed;
-        } else if (directionString === "center") {
-            direction = JoystickDirection.Center;
-        } else if (directionString === "up") {
-            direction = JoystickDirection.Up;
-        } else if (directionString === "down") {
-            direction = JoystickDirection.Down;
-        } else if (directionString === "right") {
-            direction = JoystickDirection.Right;
-        } else if (directionString === "left") {
-            direction = JoystickDirection.Left;
-        } else {
-            direction = JoystickDirection.Center;
-            serialDebugMsg("joystickDirectionThread: Error directionString: " + directionString + " is not valid. Setting to Center");
-        }
-        serialDebugMsg("joystickDirectionThread: Selected trigger direction: " + directionString);
+    //% blockId="Input_JoystickCallbackDir"
+    //% block="when joystick direction: %direction"
+    //% direction.defl=eJoystickDirection.Center
+    //% group="Input"
+    export function joystickDirectionThread(direction: eJoystickDirection, callback: () => void): void {
+        serialDebugMsg("joystickDirectionThread: Selected trigger direction: " + direction);
         basic.pause(getRandomInt(1, 100)); // Wait 1 to 100ms to asynchron threads
         control.inBackground(() => {
-            let lastJoystickDirectionLocal: JoystickDirection = JoystickDirection.NotPressed; // Local state variable
-            let currentJoystickDirection: JoystickDirection = 0;
+            let lastJoystickDirectionLocal: eJoystickDirection = eJoystickDirection.NotPressed; // Local state variable
+            let currentJoystickDirection: eJoystickDirection = 0;
             while (true) {
                 currentJoystickDirection = readJoystick();
                 if (lastJoystickDirectionLocal !== currentJoystickDirection && direction === currentJoystickDirection) {
@@ -552,19 +355,23 @@ namespace NeoPixelMatrix {
 
     /**
      */
-    //% block="Bild8x8"
+    //% blockId="Image_8x8"
+    //% block="Image 8x8"
     //% imageLiteral=1
     //% imageLiteralColumns=8
     //% imageLiteralRows=8
     //% shim=images::createImage
-    //% weight=90
+    //% group="Pixels" weight=60
     export function matrix8x8(i: string): Image {
         im = <Image><any>i;
         return im
     }
 
-    //% block="show image on NeoPixel matrix $image with color $color"
+    //% blockId="Matrix_ImageStatic"
+    //% block="show image on NeoPixel matrix | $image | with color $color"
+    //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
+    //% group="Pixels" weight=70
     export function showImage(image: Image, color: number): void {
         try {
             let imagewidth = image.width();
@@ -586,11 +393,14 @@ namespace NeoPixelMatrix {
         im = <Image><any>'';
     }
 
-    //% block="show moving image on NeoPixel matrix $image with color $color and speed $speed in direction $direction"
+    //% blockId="Matrix_ImageMoving"
+    //% block="show moving image on NeoPixel matrix | $image with color $color and speed $speed in direction $direction"
+    //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
     //% speed.defl=10 speed.min=1 speed.max=100
-    //% direction.defl=Direction.Right
-    export function movingImage(image: Image, color: number, speed: number, direction: Direction): void {
+    //% direction.defl=eDirection.Right
+    //% group="Pixels" weight=69
+    export function movingImage(image: Image, color: number, speed: number, direction: eDirection): void {
         /* Due to a bug the block is always generated with speed of 0. In this case we set it to the slowest speed. */
         if (speed < 1) {
             speed = 1; // slowest speed
@@ -602,7 +412,7 @@ namespace NeoPixelMatrix {
         speed = linearizeInt(speed, 1, 100, 1, 1000) // Convert speed to ms
 
         try {
-            if (direction === Direction.Left) {
+            if (direction === eDirection.Left) {
                 for (let offset = -matrixWidth; offset <= matrixWidth; offset++) {
                     for (let x = 0; x < matrixWidth; x++) {
                         for (let y = 0; y < matrixHeight; y++) {
@@ -614,7 +424,7 @@ namespace NeoPixelMatrix {
                     strip.show();
                     basic.pause(speed);
                 }
-            } else if (direction === Direction.Right) {
+            } else if (direction === eDirection.Right) {
                 for (let offset = matrixWidth; offset >= -matrixWidth; offset--) {
                     for (let x = 0; x < matrixWidth; x++) {
                         for (let y = 0; y < matrixHeight; y++) {
@@ -633,10 +443,11 @@ namespace NeoPixelMatrix {
         }
     }
 
-
+    //% blockId="Matrix_TextScroll"
     //% block="scroll text $text with color $color and speed $speed"
     //% color.shadow="colorNumberPicker"
     //% speed.defl=10 speed.min=1 speed.max=100
+    //% group="Pixels" weight=71
     export function scrollText(text: string, color: number, speed: number): void {
         /* Due to a bug the block is always generated with speed of 0. In this case we set it to the slowest speed. */
         if (speed < 1) {
@@ -779,7 +590,9 @@ namespace NeoPixelMatrix {
         timeUpdateIntervalCounter++;
     }
 
+    //% blockId="Clock_TimeGet"
     //% block="get current time"
+    //% group="Clock"
     export function getCurrentTime(): number {
         let currentTimeSecondsLocal = 0;
         if (!isUpdatingTime) { // Mutex to prevent reading time while it is being calculated
@@ -792,7 +605,9 @@ namespace NeoPixelMatrix {
         return currentTimeSecondsLocal;
     }
 
+    //% blockId="Clock_TimeGetStr"
     //% block="get current time as text"
+    //% group="Clock"
     export function getCurrentTimeAsText(): string {
         let currentTimeSecondsLocal = 0;
         if (!isUpdatingTime) { // Mutex to prevent reading time while it is being calculated
@@ -815,11 +630,13 @@ namespace NeoPixelMatrix {
         return `${hours}:${minutes}:${seconds}`; // return the time as a string
     }
 
-    /* TODO Bug in block no slider for setting time, only works with variables. */
+    /* TODO Bug in block no switch for setting time, only works with variables. */
+    //% blockId="Clock_TimeSet"
     //% block="set current time to $hours:$minutes:$seconds"
     //% hours.min=0 hours.max=23
     //% minutes.min = 0 minutes.max = 59
     //% seconds.min = 0 seconds.max = 59
+    //% group="Clock"
     export function setCurrentTime(hours: number, minutes: number, seconds: number): void {
         // Validate the input time
         if (hours < 0 || hours > 23) {
@@ -988,28 +805,28 @@ namespace NeoPixelMatrix {
         }
 
         public setTime(): void {
-            const joystickDirection: JoystickDirection = readJoystick();
+            const joystickDirection: eJoystickDirection = readJoystick();
             /* If the joystick is not pressed, do nothing */
-            if (joystickDirection == JoystickDirection.NotPressed) {
+            if (joystickDirection == eJoystickDirection.NotPressed) {
                 return;
             }
             const currentTimeSecondsLocal = getCurrentTime();
             const hours = Math.floor((currentTimeSecondsLocal / 3600) % 12);  // ensure hours are between 0 and 11 and are whole numbers
             const minutes = Math.floor((currentTimeSecondsLocal / 60) % 60);  // ensure minutes are between 0 and 59 and are whole numbers
             switch (joystickDirection) {
-                case JoystickDirection.Up:
+                case eJoystickDirection.Up:
                     /* Increase hours by 1 */
                     setCurrentTime((hours + 1) % 12, minutes, 0);
                     break;
-                case JoystickDirection.Down:
+                case eJoystickDirection.Down:
                     /* Decrease hours by 1 */
                     setCurrentTime((hours + 11) % 12, minutes, 0);
                     break;
-                case JoystickDirection.Right:
+                case eJoystickDirection.Right:
                     /* Increase minutes by 5 */
                     setCurrentTime(hours, (minutes + 5) % 60, 0);
                     break;
-                case JoystickDirection.Left:
+                case eJoystickDirection.Left:
                     /* Decrease minutes by 5 */
                     setCurrentTime(hours, (minutes + 55) % 60, 0);
                     break;
@@ -1023,12 +840,14 @@ namespace NeoPixelMatrix {
     }
 
     /* Not if this block is used with the control.inBackground block, it will not work #BUG */
-    //% block="create word clock, version $version, hour color $hourColor, minute color $minuteColor, word color $wordColor"
-    //% version.defl=1
+    //% blockId="Clock_CreateWordClock"
+    //% block="create word clock version $version hour color $hourColor minute color $minuteColor word color $wordColor"
+    //% version.defl=eMatrixVersion.V1
     //% hourColor.shadow="colorNumberPicker"
     //% minuteColor.shadow="colorNumberPicker"
     //% wordColor.shadow="colorNumberPicker"
-    export function createWordClock(version: number = 1, hourColor: number, minuteColor: number, wordColor: number): void {
+    //% group="Clock"
+    export function createWordClock(version: eMatrixVersion, hourColor: number, minuteColor: number, wordColor: number): void {
         const wordClock = new WordClock(version, hourColor, minuteColor, wordColor);
         basic.pause(100);
         if (!wordClock) {
@@ -1077,7 +896,9 @@ namespace NeoPixelMatrix {
         });
     }
 
+    //% blockId="Debug_MatrixHardware"
     //% block="Test LED matrix hardware"
+    //% advanced=true
     export function testLedMatrixHW(): void {
         let oldBrightness: number = currentBrightness
 
@@ -1117,26 +938,26 @@ namespace NeoPixelMatrix {
         setBrightness(oldBrightness);
         serialDebugMsg("testLedMatrix: Finished testing LED matrix pixels");
 
-        /* Test Slider */
+        /* Test Switch */
         basic.showString("MOVE SLIDER");
         // scrollText("MOVE SLIDER", neopixel.colors(NeoPixelColors.White), 90);
-        serialDebugMsg("testLedMatrix: Start testing LED matrix slider");
+        serialDebugMsg("testLedMatrix: Start testing LED matrix switch");
         /* Set the first pixel to blue during the test. */
         setPixel(0, 0, colorBlue);
         strip.show();
-        while (0 !== readSlider()) {
+        while (0 !== readSwitch()) {
             basic.pause(pollingInterval);
         }
-        while (1 !== readSlider()) {
+        while (1 !== readSwitch()) {
             basic.pause(pollingInterval);
         }
-        while (0 !== readSlider()) {
+        while (0 !== readSwitch()) {
             basic.pause(pollingInterval);
         }
         /* Set the first pixel to green when the test passed. */
         setPixel(0, 0, colorGreen);
         strip.show();
-        serialDebugMsg("testLedMatrix: Slider Works");
+        serialDebugMsg("testLedMatrix: Switch Works");
         // basic.showString("SLIDER OK");
         // scrollText("SLIDER OK", neopixel.colors(NeoPixelColors.White), 90);
 
@@ -1186,7 +1007,7 @@ namespace NeoPixelMatrix {
     class SnakeGame {
         private _matrix: any;
         private snake: number[][] = [[3, 3]]; // Initial position of the snake
-        private direction: JoystickDirection = JoystickDirection.Right;
+        private direction: eJoystickDirection = eJoystickDirection.Right;
         private food: number[] = [2, 2]; // Initial position of the food
         private gameInterval: number = 500; // Game update interval in milliseconds
         private isGameOver: boolean = false;
@@ -1238,16 +1059,16 @@ namespace NeoPixelMatrix {
         private updateSnake(): void {
             let head = this.snake[0].slice();
             switch (this.direction) {
-                case JoystickDirection.Up:
+                case eJoystickDirection.Up:
                     head[1]++;
                     break;
-                case JoystickDirection.Down:
+                case eJoystickDirection.Down:
                     head[1]--;
                     break;
-                case JoystickDirection.Left:
+                case eJoystickDirection.Left:
                     head[0]--;
                     break;
-                case JoystickDirection.Right:
+                case eJoystickDirection.Right:
                     head[0]++;
                     break;
             }
@@ -1297,7 +1118,7 @@ namespace NeoPixelMatrix {
                         `),
                     0xffff00,
                     10,
-                    Direction.Right
+                    eDirection.Right
                 )
             }
             control.reset();
@@ -1312,11 +1133,11 @@ namespace NeoPixelMatrix {
             this._matrix.show();
         }
 
-        private changeDirection(newDirection: JoystickDirection): void {
-            if ((this.direction === JoystickDirection.Up && newDirection !== JoystickDirection.Down) ||
-                (this.direction === JoystickDirection.Down && newDirection !== JoystickDirection.Up) ||
-                (this.direction === JoystickDirection.Left && newDirection !== JoystickDirection.Right) ||
-                (this.direction === JoystickDirection.Right && newDirection !== JoystickDirection.Left)) {
+        private changeDirection(newDirection: eJoystickDirection): void {
+            if ((this.direction === eJoystickDirection.Up && newDirection !== eJoystickDirection.Down) ||
+                (this.direction === eJoystickDirection.Down && newDirection !== eJoystickDirection.Up) ||
+                (this.direction === eJoystickDirection.Left && newDirection !== eJoystickDirection.Right) ||
+                (this.direction === eJoystickDirection.Right && newDirection !== eJoystickDirection.Left)) {
                 this.direction = newDirection;
             }
         }
@@ -1335,10 +1156,10 @@ namespace NeoPixelMatrix {
                 while (true) {
                     const joystickDirection = readJoystick();
                     switch (joystickDirection) {
-                        case JoystickDirection.Up:
-                        case JoystickDirection.Down:
-                        case JoystickDirection.Left:
-                        case JoystickDirection.Right:
+                        case eJoystickDirection.Up:
+                        case eJoystickDirection.Down:
+                        case eJoystickDirection.Left:
+                        case eJoystickDirection.Right:
                             this.changeDirection(joystickDirection);
                             break;
                     }
@@ -1348,7 +1169,9 @@ namespace NeoPixelMatrix {
         }
     }
 
-    //% block="snake game"
+    //% blockId="Game_Snake"
+    //% block="Snake Game"
+    //% subcategory="Games"
     export function snake(): void {
         control.inBackground(() => {
             const snakeGame = new SnakeGame();
