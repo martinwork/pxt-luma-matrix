@@ -25,6 +25,7 @@
   "NeoPixelMatrix.snake|block": "Snake Game",
   "NeoPixelMatrix.switchValueChangedThread|block": "Wenn Schalter geändert",
   "NeoPixelMatrix.testLedMatrixHW|block": "Test LED Matrix Hardware",
+  "NeoPixelMatrix|block": "InES Matrix",
   "eDirection.Left|block": "Links",
   "eDirection.Right|block": "Rechts",
   "eJoystickDirection.Center|block": "Mitte",

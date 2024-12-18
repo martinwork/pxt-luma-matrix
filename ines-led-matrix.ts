@@ -129,6 +129,15 @@ namespace NeoPixelMatrix {
         serialDebugMsg("initializeMatrixInterface: pinSwitch: " + pinSwitch + ", pinCenterButton:" + pinCenterButton + ", pinUpButton: " + pinUpButton + ", pinDownButton: " + pinDownButton + ", pinRightButton:" + pinRightButton + ", pinLeftButton: " + pinLeftButton);
     }
 
+    /**
+     * This function allows to use custom pins for the input devices.
+     * @param pinSwitchTemp is the GPIO pin for the switch
+     * @param pinCenterButtonTemp is the GPIO pin for the center button of the joystick
+     * @param pinUpButtonTemp is the GPIO pin for the up button of the joystick
+     * @param pinDownButtonTemp is the GPIO pin for the down button of the joystick
+     * @param pinRightButtonTemp is the GPIO pin for the right button of the joystick
+     * @param pinLeftButtonTemp is the GPIO pin for the left button of the joystick
+    */
     //% blockId="Matrix_InitExpert"
     //% block="initialize LED Matrix Interface (Expert). \nSwitch pin $pinSwitchTemp \nCenter button pin $pinCenterButtonTemp \nUp button pin $pinUpButtonTemp \nDown button pin $pinDownButtonTemp \nRight button pin $pinRightButtonTemp \nLeft button pin $pinLeftButtonTemp"
     //% advanced=true
