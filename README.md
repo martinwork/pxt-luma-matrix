@@ -18,6 +18,9 @@ Um dieses Repository in MakeCode zu bearbeiten.
 * klicke auf **Importieren** und dann auf **Importiere URL**
 * füge **https://github.com/vritter-zhaw/ines-led-matrix** ein und klicke auf Importieren
 
+## Übersetzung aktualisieren
+Übersetzung der Blöcke ist im Ordner `_locales/de` gespeichert. Um die Übersetzung zu aktualisieren können die entrsprechenden Dateien in MakeCode geändert werden. Bei grösseren Änderungen bzw. neu hinzugefügten Blöcken kann die [Anleitung](https://makecode.com/extensions/localization) von MakeCode verwendet werden.
+
 #### Metadaten (verwendet für Suche, Rendering)
 
 * for PXT/microbit
