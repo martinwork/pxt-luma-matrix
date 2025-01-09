@@ -92,7 +92,7 @@ namespace Lumatrix {
     }
 
     //% blockId="Matrix_Init"
-    //% block="initialize NeoPixel matrix with pin $pin and brightness $brightness"
+    //% block="initialize Lumatrix with pin $pin and brightness $brightness"
     //% brightness.defl=127 brightness.min=0 brightness.max=255
     //% group="Pixels" weight=120
     export function initializeMatrix(pin: DigitalPin = DigitalPin.P0, brightness: number): void {
@@ -160,7 +160,7 @@ namespace Lumatrix {
     }
 
     //% blockId="Matrix_Clear"
-    //% block="clear NeoPixel matrix"
+    //% block="clear Matrix"
     //% group="Pixels" weight=110
     export function clear(): void {
         if (strip) {
@@ -370,7 +370,7 @@ namespace Lumatrix {
     }
 
     //% blockId="Matrix_ImageStatic"
-    //% block="show image on NeoPixel matrix | $image | with color $color"
+    //% block="show image on Matrix | $image | with color $color"
     //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
     //% group="Pixels" weight=70
@@ -396,7 +396,7 @@ namespace Lumatrix {
     }
 
     //% blockId="Matrix_ImageMoving"
-    //% block="show moving image on NeoPixel matrix | $image with color $color and speed $speed in direction $direction"
+    //% block="show moving image on Matrix | $image with color $color and speed $speed in direction $direction"
     //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
     //% speed.defl=10 speed.min=1 speed.max=100
