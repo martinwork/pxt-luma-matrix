@@ -45,6 +45,7 @@ namespace Lumatrix {
     let totalWidth: number = 0;
     let index: number = 0;
     let debugEnabled: boolean = false;
+    let pixelBuffer: Buffer = Buffer.create(3*8*8)
 
 
     /* FUNCTIONS */
@@ -67,7 +68,7 @@ namespace Lumatrix {
     //% blockId="Debug_Enable"
     //% block="set serial debugging prints to $enable"
     //% enable.shadow="toggleOnOff"
-    //% advanced=true
+    //% advanced=true group="Debug"
     export function debugEnable(enable: boolean): void {
         debugEnabled = enable;
     }
@@ -133,7 +134,7 @@ namespace Lumatrix {
     */
     //% blockId="Matrix_InitExpert"
     //% block="initialize LED Matrix Interface (Expert). \nSwitch pin $pinSwitchTemp \nCenter button pin $pinCenterButtonTemp \nUp button pin $pinUpButtonTemp \nDown button pin $pinDownButtonTemp \nRight button pin $pinRightButtonTemp \nLeft button pin $pinLeftButtonTemp"
-    //% advanced=true
+    //% advanced=true group="Debug"
     export function initializeMatrixInterfaceExpert(
         pinSwitchTemp: DigitalPin,
         pinCenterButtonTemp: DigitalPin,
@@ -166,6 +167,7 @@ namespace Lumatrix {
         if (strip) {
             strip.clear();
             strip.show();
+            pixelBuffer.fill(0)
         }
     }
 
@@ -189,11 +191,25 @@ namespace Lumatrix {
             if (x >= 0 && x < matrixWidth && y >= 0 && y < matrixHeight) {
                 index = (matrixHeight - 1 - y) * matrixWidth + x; // (y)* 8 + x;
                 strip.setPixelColor(index, color);
+                pixelBuffer.setUint8(3 * index + 0, (color >> 16) & 0xff)
+                pixelBuffer.setUint8(3 * index + 1, (color >> 8) & 0xff)
+                pixelBuffer.setUint8(3 * index + 2, (color >> 0) & 0xff)
                 // serialDebugMsg("setPixel: set pixel(" + x + "," + y + ") to = #" + color);
             } else {
                 serialDebugMsg("setPixel: Error pixel out of range");
             }
         }
+    }
+
+    //% blockId="Matrix_RGBToColor"
+    //% block="R: $R G: $G B: $B"
+    //% R.min=0 R.max=255 G.min=0 G.max=255 B.min=0 B.max=255 
+    //% group="Pixels" weight=108
+    export function rgbToColor(R: number, G: number, B: number): number {
+        R = Math.max(0, Math.min(255, R));
+        G = Math.max(0, Math.min(255, G));
+        B = Math.max(0, Math.min(255, B));
+        return neopixel.rgb(R, G, B);
     }
 
     //% blockId="Matrix_SetPixelColor"
@@ -223,6 +239,133 @@ namespace Lumatrix {
         serialDebugMsg("setOnePixel: Pixel: " + x + "," + y + " is set to color(R,G,B): (" + R + "," + G + "," + B + ")");
     }
 
+    //% blockId="Matrix_GetMatrixImage"
+    //% block="Get Image from Matrix"
+    //% group="Pixels" weight=106
+    export function getMatrixImage(): Image {
+        let img = images.createImage(`
+        . . . . . . . .
+        . . . . . . . .
+        . . . . . . . .
+        . . . . . . . .
+        . . . . . . . .
+        . . . . . . . .
+        . . . . . . . .
+        . . . . . . . .
+    `); // Initialize an 8x8 image
+
+        try {
+            let imagewidth = img.width();
+            let imageheight = img.height();
+
+            for (let y = 0; y < imageheight; y++) {
+                for (let x = 0; x < imagewidth; x++) {
+                    let index = (matrixHeight - 1 - y) * matrixWidth + x;
+                    if (pixelBuffer.getUint8(3 * index + 0) || pixelBuffer.getUint8(3 * index + 1) || pixelBuffer.getUint8(3 * index + 2)) {
+                        img.setPixel(x, y, true); // Set the pixel if the bit is 1
+                    } else {
+                        img.setPixel(x, y, false); // Clear the pixel if the bit is 0
+                    }
+                }
+            }
+        } catch (e) {
+            console.log(`bufferToBitmap error: ${e}`);
+        }
+
+        return img;
+    }
+
+    //% blockId="Matrix_GetPixelBuffer"
+    //% block="Get Pixel Buffer"
+    //% group="Pixels" weight=106
+    export function getPixelBuffer(): Buffer {
+        return pixelBuffer
+    }
+
+    //% blockId="Matrix_ApplyPixelBuffer"
+    //% block="Apply Pixel Buffer $buf"
+    //% group="Pixels" weight=106
+    export function applyPixelBuffer(buf: Buffer) {
+        const dataLen = buf.length;
+
+        // Ensure buffer length is a multiple of 3
+        if (dataLen % 3 !== 0) {
+            serialDebugMsg("Error: Buffer length " + dataLen + " is not a multiple of 3.");
+            return;
+        }
+        if (dataLen < 192) {
+            serialDebugMsg("Error: Buffer length " + dataLen + " to small.");
+            return;
+        }
+
+        serialDebugMsg("Applying " + dataLen + " bytes ");
+
+        for (let i = 0; i < dataLen; i += 3) {
+            const pixelIndex = Math.floor(i / 3);
+            let x = pixelIndex % matrixWidth;
+            let y = matrixHeight - 1 - Math.floor(pixelIndex / matrixWidth);
+
+            // Safely pack the color from the buffer
+            if (i + 2 < dataLen) {
+                const r = buf.getUint8(i + 0);
+                const g = buf.getUint8(i + 1);
+                const b = buf.getUint8(i + 2);
+                const color = (r << 16) | (g << 8) | b;
+                setOnePixel(x, y, color);
+            } else {
+                serialDebugMsg("Error: Incomplete RGB triplet at buffer index " + i);
+            }
+        }
+    }
+
+    //% blockId="Matrix_GetPixelRGB"
+    //% block="Get Color at Pixel x: $x y: $y"
+    //% x.min=0 x.max=7 y.min=0 y.max=7
+    //% group="Pixels" weight=106
+    export function getColorFromPixel(x: number, y: number): number {
+        let color = 0x000000;
+        let index = (matrixHeight - 1 - y) * matrixWidth + x;
+        if (x >= 0 && x < matrixWidth && y >= 0 && y < matrixHeight) {
+            color |= pixelBuffer.getUint8(index * 3 + 0) << 16;
+            color |= pixelBuffer.getUint8(index * 3 + 1) << 8;
+            color |= pixelBuffer.getUint8(index * 3 + 2) << 0;
+            serialDebugMsg("color is" + color)
+        }
+        return color
+    }
+
+    //% blockId="Matrix_AddPixelRGB"
+    //% block="Add R: $R G: $G B: $B to pixel at x: $x y: $y"
+    //% x.min=0 x.max=7 y.min=0 y.max=7
+    //% R.min=0 R.max=255 G.min=0 G.max=255 B.min=0 B.max=255
+    //% group="Pixels" advanced=true
+    //% blockExternalInputs=true
+    export function addColorToPixel(x: number, y: number, R: number, G: number, B: number) {
+        let index = (matrixHeight - 1 - y) * matrixWidth + x;
+        if (x >= 0 && x < matrixWidth && y >= 0 && y < matrixHeight) {
+            R = Math.max(0, Math.min(255, pixelBuffer.getUint8(index * 3 + 0) + R));
+            G = Math.max(0, Math.min(255, pixelBuffer.getUint8(index * 3 + 1) + G));
+            B = Math.max(0, Math.min(255, pixelBuffer.getUint8(index * 3 + 2) + B));
+        }
+        setOnePixelRGB(x, y, R, G, B);
+    }
+
+    //% blockId="Matrix_SubtractPixelRGB"
+    //% block="Subtract R: $R G: $G B: $B from pixel at x: $x y: $y"
+    //% x.min=0 x.max=7 y.min=0 y.max=7
+    //% R.min=0 R.max=255 G.min=0 G.max=255 B.min=0 B.max=255
+    //% group="Pixels" advanced=true
+    //% blockExternalInputs=true
+    export function subtractColorFromPixel(x: number, y: number, R: number, G: number, B: number) {
+        let index = (matrixHeight - 1 - y) * matrixWidth + x;
+        if (x >= 0 && x < matrixWidth && y >= 0 && y < matrixHeight) {
+            R = Math.max(0, Math.min(255, pixelBuffer.getUint8(index * 3 + 0) - R));
+            G = Math.max(0, Math.min(255, pixelBuffer.getUint8(index * 3 + 1) - G));
+            B = Math.max(0, Math.min(255, pixelBuffer.getUint8(index * 3 + 2) - B));
+        }
+        setOnePixelRGB(x, y, R, G, B);
+    }
+
     //% blockId="Input_GPIORead"
     //% block="read GPIO $pin"
     //% group="Input"
@@ -249,15 +392,16 @@ namespace Lumatrix {
     /* Creates thread to poll switch value and execute callback when value changes. */
     //% blockId="Input_SwitchCallback"
     //% block="when switch value changed"
+    //% draggableParameters="reporter"
     //% group="Input"
-    export function switchValueChangedThread(callback: () => void): void {
+    export function switchValueChangedThread(callback: (state: boolean) => void): void {
         control.inBackground(() => {
             let currentSwitchValue = 0;
             while (true) {
                 currentSwitchValue = pins.digitalReadPin(pinSwitch);
                 if (currentSwitchValue !== lastSwitchValue) {
                     lastSwitchValue = currentSwitchValue;
-                    callback();
+                    callback(<any>currentSwitchValue)
                 }
                 basic.pause(pollingInterval);
             }
@@ -314,16 +458,17 @@ namespace Lumatrix {
     /* Creates thread to poll joystick direction and execute callback when direction changes. */
     //% block="Input_JoystickCallback"
     //% block="when joystick changed"
+    //% draggableParameters="reporter"
     //% group="Input"
-    export function joystickChangedThread(callback: () => void): void {
+    export function joystickChangedThread(callback: (direction: number) => void): void {
         control.inBackground(() => {
-            let currentJoystickDirection: eJoystickDirection = 0;
+            let currentJoystickDirection: eJoystickDirection = eJoystickDirection.NotPressed;
             while (true) {
                 currentJoystickDirection = readJoystick();
                 if (lastJoystickDirection !== currentJoystickDirection) {
                     lastJoystickDirection = currentJoystickDirection;
                     serialDebugMsg("joystickChangedThread: Joystick direction changed to: " + currentJoystickDirection);
-                    callback();
+                    callback(currentJoystickDirection);
                 }
                 basic.pause(pollingInterval);
             }
@@ -370,11 +515,13 @@ namespace Lumatrix {
     }
 
     //% blockId="Matrix_ImageStatic"
-    //% block="show image on Matrix | $image | with color $color"
+    //% block="show image on Matrix | $image | with color $color || Layer $layer"
     //% image.shadow="Image_8x8"
     //% color.shadow="colorNumberPicker"
+    //% layer.defl=true
+    //% layer.shadow="toggleOnOff"
     //% group="Pixels" weight=70
-    export function showImage(image: Image, color: number): void {
+    export function showImage(image: Image, color: number, layer?: boolean): void {
         try {
             let imagewidth = image.width();
             let imageheight = image.height();
@@ -385,6 +532,8 @@ namespace Lumatrix {
                     //serialDebugMsg("generating matrix 0");
                     if (image.pixel(x, y)) {
                         setPixel(x, y, color);
+                    } else if (layer == false){
+                        setPixel(x, y, 0x000000);
                     }
                 }
             }
@@ -555,9 +704,11 @@ namespace Lumatrix {
     }
     
 
+    
+
     //% blockId="Debug_MatrixHardware"
     //% block="Test LED matrix hardware"
-    //% advanced=true
+    //% advanced=true group="Debug"
     export function testLedMatrixHW(): void {
         let oldBrightness: number = currentBrightness
 
