@@ -1,6 +1,6 @@
 {
     "name": "InES LED-Matrix",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Erweiterung für die Hardware zum LED-Matrix Workshop",
     "dependencies": {
         "core": "*",
