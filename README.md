@@ -10,6 +10,29 @@ Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
 * klicke auf **Erweiterungen** unter dem Zahnrad-Menü
 * nach **https://github.com/ines-hpmm/ines-led-matrix** suchen und importieren
 
+## Matrix initialisieren
+In jedem Programm muss zu beginn die Matrix initialisiert werden. Dazu gibt es einen Block:
+```blocks
+Lumatrix.initializeMatrix(DigitalPin.P0, 135)
+```
+
+## Beispiel
+Die vorhandenen Blöcke können Bilder und Text darstellen, sowie einzelne Pixel ansteuern.
+```blocks
+Lumatrix.initializeMatrix(DigitalPin.P0, 135)
+Lumatrix.scrollText("LUMATRIX", 0xff00FF, 90)
+Lumatrix.showImage(Lumatrix.matrix8x8(`
+    . . . . . . . .
+    . # # . . # # .
+    . # # . . # # .
+    . . . . . . . .
+    # . . . . . . #
+    . # . . . . # .
+    . . # # # # . .
+    . . . . . . . .
+    `), 0xffff00)
+```
+
 ## Dieses Projekt bearbeiten
 
 Um dieses Repository in MakeCode zu bearbeiten.
@@ -27,6 +50,14 @@ npm install -g pxt
 pxt target microbit
 pxt gendocs --locs
 ```
+
+## Supported targets
+
+* for PXT/microbit
+
+## Lizenz
+
+MIT
 
 #### Metadaten (verwendet für Suche, Rendering)
 
