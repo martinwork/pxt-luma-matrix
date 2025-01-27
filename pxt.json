@@ -16,7 +16,8 @@
         "_locales/de/InES LED-Matrix-jsdoc-strings.json",
         "wordclock.ts",
         "snake-game.ts",
-        "rf-messages.ts"
+        "rf-messages.ts",
+        "tutorial-info-cache.json"
     ],
     "testFiles": [
         "test.ts"
