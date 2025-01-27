@@ -17,7 +17,8 @@
         "wordclock.ts",
         "snake-game.ts",
         "rf-messages.ts",
-        "tutorial-info-cache.json"
+        "tutorial-info-cache.json",
+        "_locales/de/README.md"
     ],
     "testFiles": [
         "test.ts"
@@ -30,6 +31,7 @@
         "microbit"
     ],
     "preferredEditor": "tsprj",
+    "icon": "icon.png",
     "disablesVariants": [
         "mbdal"
     ]

@@ -1,23 +1,24 @@
 
-> Diese Seite bei [https://ines-hpmm.github.io/ines-led-matrix/](https://ines-hpmm.github.io/ines-led-matrix/) öffnen
+> Open this page at [https://ines-hpmm.github.io/ines-led-matrix/](https://ines-hpmm.github.io/ines-led-matrix/)
 
-## Als Erweiterung verwenden
+## Use as an Extension
 
-Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
+This repository can be added as an **extension** in MakeCode.
 
-* öffne [https://makecode.microbit.org/](https://makecode.microbit.org/)
-* klicke auf **Neues Projekt**
-* klicke auf **Erweiterungen** unter dem Zahnrad-Menü
-* nach **https://github.com/ines-hpmm/ines-led-matrix** suchen und importieren
+* Open [https://makecode.microbit.org/](https://makecode.microbit.org/)
+* Click on **New Project**
+* Click on **Extensions** under the gear menu
+* Search for **https://github.com/ines-hpmm/ines-led-matrix** and import
 
-## Matrix initialisieren
-In jedem Programm muss zu beginn die Matrix initialisiert werden. Dazu gibt es einen Block:
+## Initialize Matrix
+The matrix must be initialized at the beginning of every program. There is a block for this:
 ```blocks
 Lumatrix.initializeMatrix(DigitalPin.P0, 135)
+
 ```
 
-## Beispiel
-Die vorhandenen Blöcke können Bilder und Text darstellen, sowie einzelne Pixel ansteuern.
+Example
+The available blocks can display images and text, as well as control individual pixels.
 ```blocks
 Lumatrix.initializeMatrix(DigitalPin.P0, 135)
 Lumatrix.scrollText("LUMATRIX", 0xff00FF, 90)
@@ -33,19 +34,19 @@ Lumatrix.showImage(Lumatrix.matrix8x8(`
     `), 0xffff00)
 ```
 
-## Dieses Projekt bearbeiten
+## Edit This Project
 
-Um dieses Repository in MakeCode zu bearbeiten.
+To edit this repository in MakeCode:
 
-* öffne [https://makecode.microbit.org/](https://makecode.microbit.org/)
-* klicke auf **Importieren** und dann auf **Importiere URL**
-* füge **https://github.com/ines-hpmm/ines-led-matrix** ein und klicke auf Importieren
+* open [https://makecode.microbit.org/](https://makecode.microbit.org/)
+* Click on **Import** and then **Import URL**
+* Enter **https://github.com/ines-hpmm/ines-led-matrix** and click Import
 
-## Übersetzung aktualisieren
-Übersetzung der Blöcke ist im Ordner `_locales/de` gespeichert. Um die Übersetzung zu aktualisieren können die entrsprechenden Dateien in MakeCode geändert werden. Bei grösseren Änderungen bzw. neu hinzugefügten Blöcken kann die [Anleitung](https://makecode.com/extensions/localization) von MakeCode verwendet werden.
+## Update Translation
+The block translations are stored in the `_locales/de` folder. To update the translation, the relevant files can be modified in MakeCode. For major changes or newly added blocks, the [MakeCode localization guide](https://makecode.com/extensions/localization) can be used.
 
 ```shell
-# NodeJS und npm müssen installiert sein
+# NodeJS and npm must be installed
 npm install -g pxt
 pxt target microbit
 pxt gendocs --locs
@@ -55,11 +56,11 @@ pxt gendocs --locs
 
 * for PXT/microbit
 
-## Lizenz
+## License
 
 MIT
 
-#### Metadaten (verwendet für Suche, Rendering)
+#### Metadata (used for search and rendering)
 
 * for PXT/microbit
 <script src="https://makecode.com/gh-pages-embed.js"></script><script>makeCodeRender("{{ site.makecode.home_url }}", "{{ site.github.owner_name }}/{{ site.github.repository_name }}");</script>
