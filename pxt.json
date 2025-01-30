@@ -1,6 +1,6 @@
 {
     "name": "Luma Matrix",
-    "version": "1.0.1",
+    "version": "0.0.1",
     "description": "Extension for the LED-Matrix Workshop at ZHAW",
     "dependencies": {
         "core": "*",
@@ -16,8 +16,7 @@
         "_locales/de/InES LED-Matrix-jsdoc-strings.json",
         "wordclock.ts",
         "snake-game.ts",
-        "rf-messages.ts",
-        "tutorial-info-cache.json"
+        "rf-messages.ts"
     ],
     "testFiles": [
         "test.ts"
