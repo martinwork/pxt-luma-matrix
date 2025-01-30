@@ -1,5 +1,5 @@
 
-> Open this page at [https://ines-hpmm.github.io/ines-led-matrix/](https://ines-hpmm.github.io/pxt-luma-matrix/)
+> Open this page at [https://ines-hpmm.github.io/pxt-luma-matrix/](https://ines-hpmm.github.io/pxt-luma-matrix/)
 
 ## Use as an Extension
 
@@ -8,7 +8,7 @@ This repository can be added as an **extension** in MakeCode.
 * Open [https://makecode.microbit.org/](https://makecode.microbit.org/)
 * Click on **New Project**
 * Click on **Extensions** under the gear menu
-* Search for **https://github.com/ines-hpmm/ines-led-matrix** and import
+* Search for **https://github.com/ines-hpmm/pxt-luma-matrix** and import
 
 ## Initialize Matrix
 The matrix must be initialized at the beginning of every program. There is a block for this:
@@ -40,7 +40,7 @@ To edit this repository in MakeCode:
 
 * open [https://makecode.microbit.org/](https://makecode.microbit.org/)
 * Click on **Import** and then **Import URL**
-* Enter **https://github.com/ines-hpmm/ines-led-matrix** and click Import
+* Enter **https://github.com/ines-hpmm/pxt-luma-matrix** and click Import
 
 ## Update Translation
 The block translations are stored in the `_locales/de` folder. To update the translation, the relevant files can be modified in MakeCode. For major changes or newly added blocks, the [MakeCode localization guide](https://makecode.com/extensions/localization) can be used.
