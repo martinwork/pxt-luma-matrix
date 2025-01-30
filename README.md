@@ -1,5 +1,5 @@
 
-> Open this page at [https://ines-hpmm.github.io/ines-led-matrix/](https://ines-hpmm.github.io/ines-led-matrix/)
+> Open this page at [https://ines-hpmm.github.io/ines-led-matrix/](https://ines-hpmm.github.io/pxt-luma-matrix/)
 
 ## Use as an Extension
 
