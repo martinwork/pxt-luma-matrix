@@ -1,5 +1,6 @@
 {
     "name": "Luma Matrix",
+    "version": "0.0.1",
     "description": "Extension for the LED-Matrix Workshop at ZHAW",
     "dependencies": {
         "core": "*",
