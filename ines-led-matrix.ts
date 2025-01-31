@@ -501,6 +501,14 @@ namespace LumaMatrix {
         });
     }
 
+    //% blockId="IO_JoystickDirectionEnum" 
+    //% block="Direction $dir"
+    //% dir.shadow="dropdown" dir.defl=eJoystickDirection.Center
+    //% group="Input"
+    export function getJoystickDirectionEnum(dir: eJoystickDirection): number {
+        return dir
+    }
+
     /**
      */
     //% blockId="Image_8x8"
