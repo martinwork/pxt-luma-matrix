@@ -30,8 +30,5 @@
         "microbit"
     ],
     "preferredEditor": "tsprj",
-    "icon": "icon.png",
-    "disablesVariants": [
-        "mbdal"
-    ]
+    "icon": "icon.png"
 }
