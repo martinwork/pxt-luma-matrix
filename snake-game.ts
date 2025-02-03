@@ -14,8 +14,12 @@
  * --
  * ------------------------------------------------------------------
  */
-namespace LumaMatrix {
+namespace lumaMatrix {
 
+    /**
+     * Fully implemented hungry snake game with joystick controls.
+     * Place only this block at the start
+     */
     //% blockId="Game_Snake"
     //% block="Snake Game"
     //% subcategory="Games"
