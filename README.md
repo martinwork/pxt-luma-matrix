@@ -54,8 +54,8 @@ lumaMatrix.showImage(lumaMatrix.matrix8x8(`
     . . # # # # . .
     . . . . . . . .
     `), 0xffff00)
-
-
+```
+```blocks
 loops.everyInterval(5000, function() {
     lumaMatrix.sendImageWithColor(lumaMatrix.matrix8x8(`
     . . . . . . . .
@@ -79,13 +79,13 @@ loops.everyInterval(5000, function() {
     . . . . . . . .
     `), 0xffff00)
 })
-
+```
+```blocks
 lumaMatrix.onReceivedMatrix(function(dataType: number, receivedBuffer: Buffer) {
     if (dataType == lumaMatrix.getDataType(lumaMatrix.eDataType.Bitmap)) {
         lumaMatrix.showImage(lumaMatrix.parseImage(receivedBuffer), lumaMatrix.parseBufferForColor(receivedBuffer))
     }
 })
-
 ```
 
 
