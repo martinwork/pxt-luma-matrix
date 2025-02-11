@@ -191,6 +191,7 @@ namespace lumaMatrix {
     //% blockId="RF_SendPixelBuffer"
     //% block="send compressed pixel buffer $buf"
     //% buf.shadow="Matrix_GetPixelBuffer"
+    //% subcategory="Communication"
     export function sendPixelBuffer(buf: Buffer) {
         let compressed = compressRGB(buf)
         let upper = Buffer.fromArray([0xa0]).concat(compressed.slice(0, 12))

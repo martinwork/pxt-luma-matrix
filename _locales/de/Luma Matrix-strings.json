@@ -67,7 +67,7 @@
   "lumaMatrix.eJoystickDirection.Down|block": "Runter",
   "lumaMatrix.eJoystickDirection.Left|block": "Links",
   "lumaMatrix.eJoystickDirection.NotPressed|block": "nicht gedrückt",
-  "lumaMatrix.eJoystickDirection.Right|block": "Runter",
+  "lumaMatrix.eJoystickDirection.Right|block": "Rechts",
   "lumaMatrix.eJoystickDirection.Up|block": "Hoch",
   "lumaMatrix.eMatrixVersion.V1|block": "V1",
   "lumaMatrix.eMatrixVersion.V2|block": "V2",
