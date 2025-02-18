@@ -24,7 +24,9 @@ The extension is built around a custom PCB with an 8x8 LED matrix, paired with a
 If you like to build your own Luma Matrix experience using off-the-shelf components, follow the guide in the [Build your own Luma Matrix](./guides/build-your-own.md) section.
 
 ```admonish info title=""
-This extension works with micro:bit v2 only.
+Using these blocks requires the [micro:bit V2](https://makecode.microbit.org/device/v2) hardware. On a micro:bit v1 board, you will see memory errors with **9xx** error code on the screen.
+
+<img src="./assets/v2-only.png" alt="v2-only" style="width:180px;" /> 
 ```
 
 ## Use as extension

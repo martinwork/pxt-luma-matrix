@@ -8,7 +8,11 @@ Use the blocks from the extension to build whatever you have in mind. Draw image
 
 ## Hardware
 
-The extension is built around a custom PCB with an 8x8 LED matrix, paired with a 3d printed frame and a plastic diffuser. The hardware is not available for sale but can be built on your own. Design files are available in [InES-HPMM/LED-Matrix-Workshop](https://github.com/InES-HPMM/LED-Matrix-Workshop) with gerber for PCB order.
+> [!IMPORTANT]
+> Using these blocks requires the [micro:bit V2](https://makecode.microbit.org/device/v2) hardware. On a micro:bit v1 board, you will see memory errors with **9xx** error code on the screen.
+> <img src="./docs/src/assets/v2-only.png" alt="v2-only" style="width:180px;" /> 
+
+The extension is built around a PCB with an 8x8 LED matrix, paired with a 3d printed frame and a plastic diffuser. The hardware is not available for sale but can be built on your own. Design files are available in [InES-HPMM/LED-Matrix-Workshop](https://github.com/InES-HPMM/LED-Matrix-Workshop) with gerber for PCB order.
 
 If you like to build your own Luma Matrix experience using off-the-shelf components, follow the guide in the [Build your own Luma Matrix](docs/src/guides/build-your-own.md) section.
 
