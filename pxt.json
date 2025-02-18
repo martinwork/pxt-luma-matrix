@@ -1,6 +1,6 @@
 {
     "name": "Luma Matrix",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "description": "Extension for the LED-Matrix Workshop at ZHAW",
     "license": "MIT",
     "dependencies": {
