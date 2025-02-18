@@ -1,6 +1,6 @@
 [book]
-title = "LED Matrix Workshop"
-description = "Challenges und Dokumentation für den LED Matrix Workshop"
+title = "Luma Matrix Workshop"
+description = "Challenges and documentation for the Luma Matrix Workshop"
 authors = ["wimd", "ebep"]
 
 language = "en"
@@ -11,4 +11,15 @@ src = "src"
 
 [build]
 create-missing = false
+
+[preprocessor]
+
+[preprocessor.admonish]
+command = "mdbook-admonish"
+assets_version = "3.0.3" # do not edit: managed by `mdbook-admonish install`
+
+[output]
+
+[output.html]
+additional-css = ["css/mdbook-admonish.css"]
 

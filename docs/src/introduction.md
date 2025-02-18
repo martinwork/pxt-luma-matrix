@@ -1,6 +1,12 @@
-# Luma Matrix Workshop
 
-> ⚠️ This extension is currently under active development. While code is complete, this documentation may be missing some aspects and will evolve over time.
+
+```admonish warning title="Active Development"
+This extension is currently under active development. While code is complete, this documentation may be missing some aspects and will evolve over time.
+```
+
+
+
+# Luma Matrix Workshop
 
 <table cellspacing="0" cellpadding="0" style="border: none;">
     <td style="border: none; text-align: left; width: 70%;">
@@ -16,6 +22,10 @@
 The extension is built around a custom PCB with an 8x8 LED matrix, paired with a 3d printed frame and a plastic diffuser. The hardware is not available for sale but can be built on your own. Design files are available in [InES-HPMM/LED-Matrix-Workshop](https://github.com/InES-HPMM/LED-Matrix-Workshop) with gerber for PCB order.
 
 If you like to build your own Luma Matrix experience using off-the-shelf components, follow the guide in the [Build your own Luma Matrix](./guides/build-your-own.md) section.
+
+```admonish info title=""
+This extension works with micro:bit v2 only.
+```
 
 ## Use as extension
 

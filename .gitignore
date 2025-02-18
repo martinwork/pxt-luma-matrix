@@ -13,3 +13,4 @@ _site
 Gemfile.lock
 package-lock.json
 package.json
+docs/css/mdbook-admonish.css
