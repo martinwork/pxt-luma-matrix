@@ -5,6 +5,7 @@ The extension allows to render graphics for a 8x8 NeoPixel Matrix using MakeCode
 ![lumatrix-schematic](./assets/lumatrix-schematic.png)
 
 ## Parts List
+
 | Part | Description | Link |
 |-------------|---------------|---------------|
 | micro:bit v2 | Microcontroller to be programmed with MakeCode | [micro:bit](https://microbit.org/buy/) |
