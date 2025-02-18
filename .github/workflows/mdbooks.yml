@@ -39,7 +39,7 @@ jobs:
           cargo install --version ${MDBOOK_VERSION} mdbook
           cargo install mdbook-admonish
       - name: Setup mdbook-admonish
-        run: mkdir css && mdbook-admonish install --css-dir css docs
+        run: mdbook-admonish install docs
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
