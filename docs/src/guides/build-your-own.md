@@ -2,7 +2,7 @@
 
 The extension allows to render graphics for a 8x8 NeoPixel Matrix using MakeCode. The matrix can be used to display images, text, and control individual pixels. 
 
-![lumatrix-schematic](./assets/lumatrix-schematic.png)
+![lumatrix-schematic](../assets/lumatrix-schematic.png)
 
 ## Parts List
 

@@ -10,5 +10,6 @@ _site
 *.tgz
 .header.json
 .simstate.json
+Gemfile.lock
 package-lock.json
 package.json
