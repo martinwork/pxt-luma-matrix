@@ -6,7 +6,7 @@ The extension allows to render graphics for a 8x8 NeoPixel Matrix using MakeCode
 
 ## Parts List
 | Part | Description | Link |
-| ----------- | ------------- | ------------- |
+|-------------|---------------|---------------|
 | micro:bit v2 | Microcontroller to be programmed with MakeCode | [micro:bit](https://microbit.org/buy/) |
 | 8x8 NeoPixel Matrix | 8x8 grid array of Neopixels. Can be single PCB with pixels or a chained set of strips. | [Adafruit](https://www.adafruit.com/product/1487) |
 | 5V Power Supply | Power source of choice for the Matrix (USB power bank, DC barrel jack with adapter, etc.) | [Adafruit](https://www.adafruit.com/product/276) |
