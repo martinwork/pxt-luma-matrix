@@ -12,6 +12,7 @@
     - [Pixel Blocks](./documentation/blocks_pixels.md)
     - [Input Blocks](./documentation/blocks_inputs.md)
     - [Clock Blocks](./documentation/blocks_clock.md)
+    - [Communication Blocks](./documentation/blocks_communication.md)
 
 - [Examples](./examples/examples.md)
     - [Challenge Template](./challenges/xx_template.md)
