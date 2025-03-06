@@ -6,7 +6,7 @@ Building your own Luma Matrix requires some advanced knowledge in electronics an
 
 The extension allows to render graphics for a 8x8 NeoPixel Matrix using MakeCode. The matrix can be used to display images, text, and control individual pixels. 
 
-![lumatrix-schematic](../assets/lumatrix-schematic.png)
+![lumatrix-schematic](../assets/lumatrix-schematic-extended.png)
 
 ## Parts List
 
@@ -23,7 +23,7 @@ The extension allows to render graphics for a 8x8 NeoPixel Matrix using MakeCode
 ## Connection
 > **Note:** Do not connect the matrix VCC directly to the micro:bit 3V. The matrix requires more power than the micro:bit can provide.
 
-> **Logic Level:** Neopixels work better with 5V logic. The micro:bit uses 3.3V logic. The matrix will work with 3V level, but adding a [logic level shifter](https://www.instructables.com/A-Quick-Guide-on-Logic-Level-Shifting/) between P0 and LED in improves stability.
+> **Logic Level:** Neopixels work better with 5V logic. The micro:bit uses 3.3V logic. The matrix will work with 3V level, but adding a [logic level shifter](https://www.instructables.com/A-Quick-Guide-on-Logic-Level-Shifting/) between P0 and LED will improve stability.
 
 1. Flash the micro:bit with the built code using MakeCode
 2. Connect Matrix GND to micro:bit GND
