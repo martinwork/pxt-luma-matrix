@@ -18,15 +18,16 @@ This block allows you to send a monochrome bitmap image with a specified color t
 
 Example usage:
 ```blocks
-// Create a heart image and send it in red
-let myImage = images.createImage(`
-    . # . # .
-    # # # # #
-    # # # # #
-    . # # # .
-    . . # . .
-`)
-lumaMatrix.sendImageWithColor(myImage, 0xff0000)
+lumaMatrix.sendImageWithColor(lumaMatrix.matrix8x8(`
+        . . . . . . . .
+        . # # . . # # .
+        . # # . . # # .
+        . . . . . . . .
+        # . . . . . . #
+        . # . . . . # .
+        . . # . . # . .
+        . . . # # . . .
+        `), 0xff0000)
 ```
 
 ### Send Compressed Pixel Buffer
@@ -35,9 +36,7 @@ This block sends a full-color image by compressing the pixel buffer before trans
 
 Example usage:
 ```blocks
-// Get the current display buffer and send it
-let buffer = lumaMatrix.getPixelBuffer()
-lumaMatrix.sendPixelBuffer(buffer)
+lumaMatrix.sendPixelBuffer(lumaMatrix.getPixelBuffer())
 ```
 
 ### Receive Matrix Data
@@ -50,14 +49,11 @@ Example usage:
 ```blocks
 lumaMatrix.onReceivedMatrix(function (dataType, receivedBuffer) {
     if (dataType == 1) {
-        // Handle bitmap
         let image = lumaMatrix.parseImage(receivedBuffer)
         let color = lumaMatrix.parseBufferForColor(receivedBuffer)
         lumaMatrix.showImage(image, color)
     } else if (dataType == 2) {
-        // Handle RGB image
-        let colorBuffer = lumaMatrix.parseColorImage(receivedBuffer)
-        lumaMatrix.showPixelBuffer(colorBuffer)
+        lumaMatrix.showPixelBuffer(lumaMatrix.parseColorImage(receivedBuffer))
     }
 })
 ```

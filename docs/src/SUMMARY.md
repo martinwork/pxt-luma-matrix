@@ -9,10 +9,10 @@
     - [Challenge 4](./challenges/04_flashing_lights.md)
 
 - [Docs](./documentation/index.md)
-    - [Pixel Blocks](./documentation/blocks_pixels.md)
-    - [Input Blocks](./documentation/blocks_inputs.md)
-    - [Clock Blocks](./documentation/blocks_clock.md)
-    - [Communication Blocks](./documentation/blocks_communication.md)
+    - [Pixel](./documentation/blocks_pixels.md)
+    - [Input](./documentation/blocks_inputs.md)
+    - [Clock](./documentation/blocks_clock.md)
+    - [Communication](./documentation/blocks_communication.md)
 
 - [Examples](./examples/examples.md)
     - [Challenge Template](./challenges/xx_template.md)
