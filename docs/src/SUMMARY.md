@@ -16,4 +16,5 @@
 
 - [Examples](./examples/examples.md)
     - [Countdown](./examples/ex_countdown.md)
+    - [Cursor](./examples/cursor.md)
     - [Challenge Template](./challenges/xx_template.md)

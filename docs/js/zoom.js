@@ -9,7 +9,7 @@ function initializeZoom() {
         img.dataset.zoomInitialized = 'true';
 
         // Variable to track if image is zoomable
-        let isZoomable = false;
+        let isZoomable = !img.classList.contains('no-zoom');
 
         // Create container if not already wrapped
         if (!img.parentElement.classList.contains('codeblock-container')) {
@@ -24,16 +24,9 @@ function initializeZoom() {
             function updateContainerDimensions() {
                 // Wait for image to be loaded to get proper dimensions
                 if (img.complete) {
-                    // Check if image dimensions and aspect ratio suggest it needs zooming
-                    const aspectRatio = img.naturalWidth / img.naturalHeight;
-                    const isLargeImage = img.naturalHeight > 1000; // Images over 1000px height are considered large
-                    const hasZoomableAspectRatio = aspectRatio > 1.5 && aspectRatio < 2; // Aspect ratio between 1.5:1 and 2:1
-                    
-                    isZoomable = isLargeImage && hasZoomableAspectRatio;
-                    
                     // For non-zoomable images, scale down to be proportional to text
                     if (!isZoomable) {
-                        // Scale factor for non-zoomable images (reduces size by ~50%)
+                        // Scale factor for non-zoomable images (reduces size by ~25%)
                         const SCALE_FACTOR = 0.25;
                         
                         // Calculate scaled dimensions
@@ -55,9 +48,6 @@ function initializeZoom() {
                             img.style.height = `${scaledHeight}px`;
                         }
                         container.style.minHeight = 'none';
-                        
-                        // Log the scaling information
-                        console.log(`Original size: ${img.naturalWidth}x${img.naturalHeight}, Scaled size: ${scaledWidth}x${scaledHeight}`);
                     } else {
                         // For zoomable images, maintain the precise sizing
                         const height = img.naturalHeight * (container.offsetWidth / img.naturalWidth);
@@ -68,23 +58,14 @@ function initializeZoom() {
                         img.style.height = 'auto';
                     }
                     
-                    // Log width comparison to console
-                    console.log(`Image: ${img.alt || 'unnamed'} - Natural width: ${img.naturalWidth}px x ${img.naturalHeight}px, Container width: ${container.offsetWidth}px x ${container.offsetHeight}px, Aspect ratio: ${aspectRatio.toFixed(2)}, Large: ${isLargeImage}, Good ratio: ${hasZoomableAspectRatio}, Zoomable: ${isZoomable}`);
-                    
                     img.style.cursor = isZoomable ? 'zoom-in' : 'default';
                     
                 } else {
                     img.onload = () => {
-                        // Same logic as above
-                        const aspectRatio = img.naturalWidth / img.naturalHeight;
-                        const isLargeImage = img.naturalHeight > 1000;
-                        const hasZoomableAspectRatio = aspectRatio > 1.5 && aspectRatio < 2;
-                        
-                        isZoomable = isLargeImage && hasZoomableAspectRatio;
-                        
+                        // For non-zoomable images, scale down to be proportional to text
                         if (!isZoomable) {
-                            // Scale factor for non-zoomable images (reduces size by ~50%)
-                            const SCALE_FACTOR = 0.5;
+                            // Scale factor for non-zoomable images (reduces size by ~25%)
+                            const SCALE_FACTOR = 0.25;
                             
                             // Calculate scaled dimensions
                             const scaledWidth = img.naturalWidth * SCALE_FACTOR;
@@ -105,9 +86,6 @@ function initializeZoom() {
                                 img.style.height = `${scaledHeight}px`;
                             }
                             container.style.minHeight = 'none';
-                            
-                            // Log the scaling information
-                            console.log(`Original size: ${img.naturalWidth}x${img.naturalHeight}, Scaled size: ${scaledWidth}x${scaledHeight}`);
                         } else {
                             // For zoomable images, maintain the precise sizing
                             const height = img.naturalHeight * (container.offsetWidth / img.naturalWidth);
@@ -117,8 +95,6 @@ function initializeZoom() {
                             img.style.width = '100%';
                             img.style.height = 'auto';
                         }
-                        
-                        console.log(`Image: ${img.alt || 'unnamed'} - Natural width: ${img.naturalWidth}px x ${img.naturalHeight}px, Container width: ${container.offsetWidth}px x ${container.offsetHeight}px, Aspect ratio: ${aspectRatio.toFixed(2)}, Large: ${isLargeImage}, Good ratio: ${hasZoomableAspectRatio}, Zoomable: ${isZoomable}`);
                         
                         img.style.cursor = isZoomable ? 'zoom-in' : 'default';
                     };

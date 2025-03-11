@@ -76,7 +76,11 @@ function makeCodeRender(targetUrl, repo) {
                 // Create the image
                 var img = document.createElement("img");
                 img.src = msg.uri;
-                img.className = "codeblock";
+                
+                // Determine if the code block should be zoomable based on line count
+                var lineCount = originalCode.trim().split('\n').length;
+                img.className = lineCount <= 10 ? "codeblock no-zoom" : "codeblock";
+                
                 // Calculate height based on width while maintaining aspect ratio
                 var aspectRatio = msg.height / msg.width;
                 img.width = msg.width;
